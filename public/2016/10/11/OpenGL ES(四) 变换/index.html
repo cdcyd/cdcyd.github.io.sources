@@ -475,8 +475,8 @@
 <p>// GLKMatrix4.h为我们提供了一个快速创建透视矩阵的函数<br>// fovyRadians是视角，它接受一个弧度值，可以用GLKMathDegreesToRadians(30)，将角度转换为弧度<br>// aspect视图宽高比，nearZ近视点，farZ远视点<br>GLKMatrix4MakePerspective(float fovyRadians, float aspect, float nearZ, float farZ)</p>
 </li>
 </ul>
-<p>projectionMatrix 和 modelviewMatrix<br>当我们构建好了变换矩阵之后怎么传递的OpenGL呢？GLKBaseEffect有一个transform的属性，其中有两个矩阵分别是projectionMatrix和modelviewMatrix<br>projectionMatrix：投影矩阵，下面就是设置一个正投影的代码<br><figure class="highlight lsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 伪代码</span></span><br><span class="line">const GLFloat aspect = view.width/view.hight；</span><br><span class="line">baseEffect.transform.projectionMatrix = GLKMatrix4MakeOrtho(<span class="number">-0.5</span> * aspect,</span><br><span class="line">                                                            <span class="number">0.5</span> * aspect,</span><br><span class="line">                                                            <span class="number">-0.5</span>,</span><br><span class="line">                                                            <span class="number">0.5</span>,</span><br><span class="line">                                                            <span class="number">-50</span>,</span><br><span class="line">                                                            <span class="number">50</span>);</span><br></pre></td></tr></table></figure></p>
-<p>modelviewMatrix：模型矩阵，下面是设置一个沿z轴平移的矩阵<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 伪代码</span></span><br><span class="line">baseEffect.transform.modelviewMatrix = GLKMatrix4MakeTranslation(<span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">-3.0f</span>);</span><br></pre></td></tr></table></figure></p>
+<p>projectionMatrix 和 modelviewMatrix<br>当我们构建好了变换矩阵之后怎么传递的OpenGL呢？GLKBaseEffect有一个transform的属性，其中有两个矩阵分别是projectionMatrix和modelviewMatrix<br>projectionMatrix：投影矩阵，下面就是设置一个正投影的代码<br><figure class="highlight lsl"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 伪代码</span></span><br><span class="line">const GLFloat aspect = view.width/view.hight；</span><br><span class="line">baseEffect.transform.projectionMatrix = GLKMatrix4MakeOrtho(<span class="number">-0.5</span> * aspect,</span><br><span class="line">                                                            <span class="number">0.5</span> * aspect,</span><br><span class="line">                                                            <span class="number">-0.5</span>,</span><br><span class="line">                                                            <span class="number">0.5</span>,</span><br><span class="line">                                                            <span class="number">-50</span>,</span><br><span class="line">                                                            <span class="number">50</span>);</span><br></pre></td></tr></table></figure></p>
+<p>modelviewMatrix：模型矩阵，下面是设置一个沿z轴平移的矩阵<br><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 伪代码</span></span><br><span class="line">baseEffect.transform.modelviewMatrix = GLKMatrix4MakeTranslation(<span class="number">0.0f</span>, <span class="number">0.0f</span>, <span class="number">-3.0f</span>);</span><br></pre></td></tr></table></figure></p>
 <p>Demo下载地址：<a href="https://github.com/cdcyd/CCOpenGLES" target="_blank" rel="noopener">https://github.com/cdcyd/CCOpenGLES</a></p>
 
       
@@ -582,7 +582,7 @@
                 alt="cyd" />
             
               <p class="site-author-name" itemprop="name">cyd</p>
-              <p class="site-description motion-element" itemprop="description">iOS、AVFoundation、OpenGL ES</p>
+              <p class="site-description motion-element" itemprop="description">Unity、iOS、AVFoundation、OpenGL ES</p>
           </div>
 
           
@@ -592,7 +592,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-count">34</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -751,7 +751,7 @@
       <i class="fa fa-area-chart"></i>
     </span>
     
-    <span title="站点总字数">229k</span>
+    <span title="站点总字数">231k</span>
   
 
   

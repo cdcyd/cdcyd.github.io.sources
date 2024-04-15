@@ -109,18 +109,18 @@
 
 
 
-  <meta name="description" content="闲来无事写的 Core Image 里的滤镜效果的Demo，目前 Core Image 有100多种滤镜效果，Demo实现了其中大概一半的效果，实在太多了，后面有时间再补全，有兴趣的可以下载下来看一下(最好用真机查看，模拟器实在太卡了)Demo地址： https://github.com/cdcyd/CCFilters滤镜的核心实现代码只需三行，如下123456789101112131415161">
+  <meta name="description" content="闲来无事写的 Core Image 里的滤镜效果的Demo，目前 Core Image 有100多种滤镜效果，Demo实现了其中大概一半的效果，实在太多了，后面有时间再补全，有兴趣的可以下载下来看一下(最好用真机查看，模拟器实在太卡了)Demo地址： https://github.com/cdcyd/CCFilters滤镜的核心实现代码只需三行，如下func filter(name: String">
 <meta name="keywords" content="CoreImage">
 <meta property="og:type" content="article">
 <meta property="og:title" content="CoreImage滤镜效果预览">
 <meta property="og:url" content="https://cdcyd.github.io/2018/03/21/CoreImage滤镜效果预览/index.html">
 <meta property="og:site_name" content="cyd’s blog">
-<meta property="og:description" content="闲来无事写的 Core Image 里的滤镜效果的Demo，目前 Core Image 有100多种滤镜效果，Demo实现了其中大概一半的效果，实在太多了，后面有时间再补全，有兴趣的可以下载下来看一下(最好用真机查看，模拟器实在太卡了)Demo地址： https://github.com/cdcyd/CCFilters滤镜的核心实现代码只需三行，如下123456789101112131415161">
+<meta property="og:description" content="闲来无事写的 Core Image 里的滤镜效果的Demo，目前 Core Image 有100多种滤镜效果，Demo实现了其中大概一半的效果，实在太多了，后面有时间再补全，有兴趣的可以下载下来看一下(最好用真机查看，模拟器实在太卡了)Demo地址： https://github.com/cdcyd/CCFilters滤镜的核心实现代码只需三行，如下func filter(name: String">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2018-05-14T06:49:32.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="CoreImage滤镜效果预览">
-<meta name="twitter:description" content="闲来无事写的 Core Image 里的滤镜效果的Demo，目前 Core Image 有100多种滤镜效果，Demo实现了其中大概一半的效果，实在太多了，后面有时间再补全，有兴趣的可以下载下来看一下(最好用真机查看，模拟器实在太卡了)Demo地址： https://github.com/cdcyd/CCFilters滤镜的核心实现代码只需三行，如下123456789101112131415161">
+<meta name="twitter:description" content="闲来无事写的 Core Image 里的滤镜效果的Demo，目前 Core Image 有100多种滤镜效果，Demo实现了其中大概一半的效果，实在太多了，后面有时间再补全，有兴趣的可以下载下来看一下(最好用真机查看，模拟器实在太卡了)Demo地址： https://github.com/cdcyd/CCFilters滤镜的核心实现代码只需三行，如下func filter(name: String">
 
 
 
@@ -424,7 +424,7 @@
                 
                   <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="本文字数">796</span>
+                <span title="本文字数">761</span>
               
 
               
@@ -458,7 +458,7 @@
       
 
       
-        <p>闲来无事写的 Core Image 里的滤镜效果的Demo，目前 Core Image 有100多种滤镜效果，Demo实现了其中大概一半的效果，实在太多了，后面有时间再补全，有兴趣的可以下载下来看一下(最好用真机查看，模拟器实在太卡了)<br>Demo地址： <a href="https://github.com/cdcyd/CCFilters" target="_blank" rel="noopener">https://github.com/cdcyd/CCFilters</a><br>滤镜的核心实现代码只需三行，如下<br><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">filter</span><span class="params">(name: String, parameters: [String:Any])</span></span> -&gt; <span class="type">UIImage</span>? &#123;</span><br><span class="line">    <span class="keyword">guard</span> <span class="keyword">let</span> image = <span class="keyword">self</span>.cgImage <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    #<span class="keyword">if</span> <span class="type">DEBUG</span></span><br><span class="line">    <span class="keyword">let</span> <span class="built_in">filter</span> = <span class="type">CIFilter</span>(name: name)</span><br><span class="line">    <span class="built_in">print</span>(<span class="built_in">filter</span>?.attributes <span class="keyword">as</span> <span class="type">Any</span>)</span><br><span class="line">    #endif</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 输入CIImage</span></span><br><span class="line">    <span class="keyword">let</span> input = <span class="type">CIImage</span>(cgImage: image)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 输出CIImage</span></span><br><span class="line">    <span class="keyword">let</span> output = input.applyingFilter(name, parameters: parameters)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 渲染图片(CIImage-&gt;CGImage)</span></span><br><span class="line">    <span class="keyword">guard</span> <span class="keyword">let</span> cgimage = <span class="type">CIContext</span>(options: <span class="literal">nil</span>).createCGImage(output, from: input.extent) <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="type">UIImage</span>(cgImage: cgimage)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+        <p>闲来无事写的 Core Image 里的滤镜效果的Demo，目前 Core Image 有100多种滤镜效果，Demo实现了其中大概一半的效果，实在太多了，后面有时间再补全，有兴趣的可以下载下来看一下(最好用真机查看，模拟器实在太卡了)<br>Demo地址： <a href="https://github.com/cdcyd/CCFilters" target="_blank" rel="noopener">https://github.com/cdcyd/CCFilters</a><br>滤镜的核心实现代码只需三行，如下<br><figure class="highlight swift"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">filter</span><span class="params">(name: String, parameters: [String:Any])</span></span> -&gt; <span class="type">UIImage</span>? &#123;</span><br><span class="line">    <span class="keyword">guard</span> <span class="keyword">let</span> image = <span class="keyword">self</span>.cgImage <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    #<span class="keyword">if</span> <span class="type">DEBUG</span></span><br><span class="line">    <span class="keyword">let</span> <span class="built_in">filter</span> = <span class="type">CIFilter</span>(name: name)</span><br><span class="line">    <span class="built_in">print</span>(<span class="built_in">filter</span>?.attributes <span class="keyword">as</span> <span class="type">Any</span>)</span><br><span class="line">    #endif</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 输入CIImage</span></span><br><span class="line">    <span class="keyword">let</span> input = <span class="type">CIImage</span>(cgImage: image)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 输出CIImage</span></span><br><span class="line">    <span class="keyword">let</span> output = input.applyingFilter(name, parameters: parameters)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 渲染图片(CIImage-&gt;CGImage)</span></span><br><span class="line">    <span class="keyword">guard</span> <span class="keyword">let</span> cgimage = <span class="type">CIContext</span>(options: <span class="literal">nil</span>).createCGImage(output, from: input.extent) <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="type">UIImage</span>(cgImage: cgimage)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 
       
     </div>
@@ -563,7 +563,7 @@
                 alt="cyd" />
             
               <p class="site-author-name" itemprop="name">cyd</p>
-              <p class="site-description motion-element" itemprop="description">iOS、AVFoundation、OpenGL ES</p>
+              <p class="site-description motion-element" itemprop="description">Unity、iOS、AVFoundation、OpenGL ES</p>
           </div>
 
           
@@ -573,7 +573,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-count">34</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -732,7 +732,7 @@
       <i class="fa fa-area-chart"></i>
     </span>
     
-    <span title="站点总字数">229k</span>
+    <span title="站点总字数">231k</span>
   
 
   

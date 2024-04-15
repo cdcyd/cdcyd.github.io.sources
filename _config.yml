@@ -8,7 +8,7 @@ author: cyd
 #subtitle: 程序猿
 language: zh-CN
 timezone: Asia/Shanghai
-description: iOS、AVFoundation、OpenGL ES
+description: Unity、iOS、AVFoundation、OpenGL ES
 
 # URL
 url: https://cdcyd.github.io
@@ -38,7 +38,7 @@ relative_link: false
 future: true
 highlight:
   enable: true
-  line_number: true
+  line_number: false
   auto_detect: true
   tab_replace:
 

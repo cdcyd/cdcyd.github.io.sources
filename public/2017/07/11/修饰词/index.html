@@ -429,7 +429,7 @@
                 
                   <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="本文字数">1.5k</span>
+                <span title="本文字数">1.4k</span>
               
 
               
@@ -464,10 +464,10 @@
 
       
         <p>在iOS中，string是用strong修饰还是用copy修饰？它们有什么区别呢？本文主要就来讨论这两个问题，在此之前，我们需要知道两个术语，浅拷贝和深拷贝<br>浅拷贝：指对内存地址的复制，让目标对象指针和源对象指向同一片内存空间，当内存销毁的时候，指向这片内存的指针需要赋值，要不然会成为野指针<br>深拷贝：指对对象具体内容复制，重新分配对象的内存地址，拷贝结束之后，两个对象虽然值是相同的，但是内存地址不一样，两个对象也互不影响，互不干涉</p>
-<p>测试一下<br><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *str = <span class="string">@"test"</span>;</span><br><span class="line"><span class="built_in">NSString</span> *copyStr = [str <span class="keyword">copy</span>];</span><br><span class="line"><span class="built_in">NSMutableString</span> *mutStr = [str mutableCopy];</span><br><span class="line">    </span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@"指针地址:str:%p--copyStr:%p--mutStr:%p"</span>,&amp;str,&amp;copyStr,&amp;mutStr);</span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@"内存地址:str:%p--copyStr:%p--mutStr:%p"</span>,str,copyStr,mutStr);</span><br></pre></td></tr></table></figure></p>
-<p>运行结果：<br><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">指针地址<span class="selector-pseudo">:str</span><span class="selector-pseudo">:0x16fb31678--copyStr</span><span class="selector-pseudo">:0x16fb31670--mutStr</span><span class="selector-pseudo">:0x16fb31668</span></span><br><span class="line">内存地址<span class="selector-pseudo">:str</span><span class="selector-pseudo">:0x1002d4080--copyStr</span><span class="selector-pseudo">:0x1002d4080--mutStr</span><span class="selector-pseudo">:0x1c024af80</span></span><br></pre></td></tr></table></figure></p>
-<p>可以看出：copy实现了一次浅拷贝，mutableCopy实现了一次深拷贝<br>实际上，对于copy和mutableCopy我们可以得出下表的结论<br><img src="http://upload-images.jianshu.io/upload_images/1258499-6bd5b734187d57ac.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""><br>理解了copy作用，我们就不难理解属性中的copy和strong了，实际上在属性中copy比strong多了一步，即在setter方法中<br><figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (void)setName:(<span class="built_in">id</span>)<span class="built_in">name</span>&#123;</span><br><span class="line">    _name = [<span class="built_in">name</span> <span class="keyword">copy</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>举个例子：假设有这样一段代码<br><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@property(copy)</span>id obj;</span><br><span class="line"></span><br><span class="line">self.obj = <span class="keyword">object</span>;</span><br><span class="line"></span><br><span class="line">此时obj是什么呢？有下面两种情况：</span><br><span class="line"><span class="number">1.</span> <span class="keyword">object</span>是不可变对象，将会把<span class="keyword">object</span>浅拷贝一次，赋值给obj</span><br><span class="line"><span class="number">2.</span> <span class="keyword">object</span>是可变对象，将会把<span class="keyword">object</span>深拷贝一次，赋值给obj</span><br><span class="line">如果obj是用strong修饰的，就没有拷贝一说了，将会直接把<span class="keyword">object</span>赋值给obj</span><br><span class="line"></span><br><span class="line">在内存计数方面</span><br><span class="line">strong 会使<span class="keyword">object</span>引用计数+<span class="number">1</span>，obj的引用计数为<span class="number">1</span></span><br><span class="line">copy   如果<span class="keyword">object</span>是不可变对象，<span class="keyword">object</span>引用计数+<span class="number">1</span>，obj的引用计数为<span class="number">1</span></span><br><span class="line">       如果<span class="keyword">object</span>是可变对象，会将<span class="keyword">object</span>深拷贝一份，<span class="keyword">object</span>的引用计数不会变，obj的引用计数为<span class="number">1</span></span><br></pre></td></tr></table></figure></p>
+<p>测试一下<br><figure class="highlight objectivec"><table><tr><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *str = <span class="string">@"test"</span>;</span><br><span class="line"><span class="built_in">NSString</span> *copyStr = [str <span class="keyword">copy</span>];</span><br><span class="line"><span class="built_in">NSMutableString</span> *mutStr = [str mutableCopy];</span><br><span class="line">    </span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@"指针地址:str:%p--copyStr:%p--mutStr:%p"</span>,&amp;str,&amp;copyStr,&amp;mutStr);</span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@"内存地址:str:%p--copyStr:%p--mutStr:%p"</span>,str,copyStr,mutStr);</span><br></pre></td></tr></table></figure></p>
+<p>运行结果：<br><figure class="highlight css"><table><tr><td class="code"><pre><span class="line">指针地址<span class="selector-pseudo">:str</span><span class="selector-pseudo">:0x16fb31678--copyStr</span><span class="selector-pseudo">:0x16fb31670--mutStr</span><span class="selector-pseudo">:0x16fb31668</span></span><br><span class="line">内存地址<span class="selector-pseudo">:str</span><span class="selector-pseudo">:0x1002d4080--copyStr</span><span class="selector-pseudo">:0x1002d4080--mutStr</span><span class="selector-pseudo">:0x1c024af80</span></span><br></pre></td></tr></table></figure></p>
+<p>可以看出：copy实现了一次浅拷贝，mutableCopy实现了一次深拷贝<br>实际上，对于copy和mutableCopy我们可以得出下表的结论<br><img src="http://upload-images.jianshu.io/upload_images/1258499-6bd5b734187d57ac.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""><br>理解了copy作用，我们就不难理解属性中的copy和strong了，实际上在属性中copy比strong多了一步，即在setter方法中<br><figure class="highlight applescript"><table><tr><td class="code"><pre><span class="line">- (void)setName:(<span class="built_in">id</span>)<span class="built_in">name</span>&#123;</span><br><span class="line">    _name = [<span class="built_in">name</span> <span class="keyword">copy</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>举个例子：假设有这样一段代码<br><figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="meta">@property(copy)</span>id obj;</span><br><span class="line"></span><br><span class="line">self.obj = <span class="keyword">object</span>;</span><br><span class="line"></span><br><span class="line">此时obj是什么呢？有下面两种情况：</span><br><span class="line"><span class="number">1.</span> <span class="keyword">object</span>是不可变对象，将会把<span class="keyword">object</span>浅拷贝一次，赋值给obj</span><br><span class="line"><span class="number">2.</span> <span class="keyword">object</span>是可变对象，将会把<span class="keyword">object</span>深拷贝一次，赋值给obj</span><br><span class="line">如果obj是用strong修饰的，就没有拷贝一说了，将会直接把<span class="keyword">object</span>赋值给obj</span><br><span class="line"></span><br><span class="line">在内存计数方面</span><br><span class="line">strong 会使<span class="keyword">object</span>引用计数+<span class="number">1</span>，obj的引用计数为<span class="number">1</span></span><br><span class="line">copy   如果<span class="keyword">object</span>是不可变对象，<span class="keyword">object</span>引用计数+<span class="number">1</span>，obj的引用计数为<span class="number">1</span></span><br><span class="line">       如果<span class="keyword">object</span>是可变对象，会将<span class="keyword">object</span>深拷贝一份，<span class="keyword">object</span>的引用计数不会变，obj的引用计数为<span class="number">1</span></span><br></pre></td></tr></table></figure></p>
 <p>综上所述，我们可以得出以下结论</p>
 <ol>
 <li>当属性本身是可变对象时<br>此时只能用strong修饰，因为如下图，下图中，name属性经过setter时，得到的永远是不可变对象，当调用可变方法时，就会崩溃<br><img src="http://upload-images.jianshu.io/upload_images/1258499-1a9d57ee8a8e4763.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></li>
@@ -578,7 +578,7 @@
                 alt="cyd" />
             
               <p class="site-author-name" itemprop="name">cyd</p>
-              <p class="site-description motion-element" itemprop="description">iOS、AVFoundation、OpenGL ES</p>
+              <p class="site-description motion-element" itemprop="description">Unity、iOS、AVFoundation、OpenGL ES</p>
           </div>
 
           
@@ -588,7 +588,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-count">34</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -747,7 +747,7 @@
       <i class="fa fa-area-chart"></i>
     </span>
     
-    <span title="站点总字数">229k</span>
+    <span title="站点总字数">231k</span>
   
 
   

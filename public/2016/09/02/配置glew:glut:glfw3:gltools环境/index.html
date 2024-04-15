@@ -109,13 +109,13 @@
 
 
 
-  <meta name="description" content="glew/glut/glfw3/gltools它们都是OpenGL的扩展或工具，其中glut是mac自带的，这里就不用讲了，直接就可以用。 一、安装homebrewbrew 的官方网站： http://brew.sh/在官方网站对brew的用法进行了详细的描述，安装方法：  在Mac中打开Termal:  输入命令：1/usr/bin/ruby -e &quot;$(curl -fsSL https://r">
+  <meta name="description" content="glew/glut/glfw3/gltools它们都是OpenGL的扩展或工具，其中glut是mac自带的，这里就不用讲了，直接就可以用。 一、安装homebrewbrew 的官方网站： http://brew.sh/在官方网站对brew的用法进行了详细的描述，安装方法：  在Mac中打开Termal:  输入命令：/usr/bin/ruby -e &quot;$(curl -fsSL https://ra">
 <meta name="keywords" content="OpenGL">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Mac下使用OpenGL——配置glew&#x2F;glut&#x2F;glfw3&#x2F;gltools环境">
 <meta property="og:url" content="https://cdcyd.github.io/2016/09/02/配置glew:glut:glfw3:gltools环境/index.html">
 <meta property="og:site_name" content="cyd’s blog">
-<meta property="og:description" content="glew/glut/glfw3/gltools它们都是OpenGL的扩展或工具，其中glut是mac自带的，这里就不用讲了，直接就可以用。 一、安装homebrewbrew 的官方网站： http://brew.sh/在官方网站对brew的用法进行了详细的描述，安装方法：  在Mac中打开Termal:  输入命令：1/usr/bin/ruby -e &quot;$(curl -fsSL https://r">
+<meta property="og:description" content="glew/glut/glfw3/gltools它们都是OpenGL的扩展或工具，其中glut是mac自带的，这里就不用讲了，直接就可以用。 一、安装homebrewbrew 的官方网站： http://brew.sh/在官方网站对brew的用法进行了详细的描述，安装方法：  在Mac中打开Termal:  输入命令：/usr/bin/ruby -e &quot;$(curl -fsSL https://ra">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1258499-744e792090eea60f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1258499-a6643aae761fc196.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
@@ -127,7 +127,7 @@
 <meta property="og:updated_time" content="2018-05-14T05:30:21.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Mac下使用OpenGL——配置glew&#x2F;glut&#x2F;glfw3&#x2F;gltools环境">
-<meta name="twitter:description" content="glew/glut/glfw3/gltools它们都是OpenGL的扩展或工具，其中glut是mac自带的，这里就不用讲了，直接就可以用。 一、安装homebrewbrew 的官方网站： http://brew.sh/在官方网站对brew的用法进行了详细的描述，安装方法：  在Mac中打开Termal:  输入命令：1/usr/bin/ruby -e &quot;$(curl -fsSL https://r">
+<meta name="twitter:description" content="glew/glut/glfw3/gltools它们都是OpenGL的扩展或工具，其中glut是mac自带的，这里就不用讲了，直接就可以用。 一、安装homebrewbrew 的官方网站： http://brew.sh/在官方网站对brew的用法进行了详细的描述，安装方法：  在Mac中打开Termal:  输入命令：/usr/bin/ruby -e &quot;$(curl -fsSL https://ra">
 <meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/1258499-744e792090eea60f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
 
 
@@ -467,15 +467,15 @@
 
       
         <p>glew/glut/glfw3/gltools它们都是OpenGL的扩展或工具，其中glut是mac自带的，这里就不用讲了，直接就可以用。</p>
-<h3 id="一、安装homebrew"><a href="#一、安装homebrew" class="headerlink" title="一、安装homebrew"></a>一、安装homebrew</h3><p>brew 的官方网站： <a href="&quot;http://brew.sh/&quot;">http://brew.sh/</a><br>在官方网站对brew的用法进行了详细的描述，安装方法：  在Mac中打开Termal:  输入命令：<br><figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="regexp">/usr/</span>bin<span class="regexp">/ruby -e "$(curl -fsSL https:/</span><span class="regexp">/raw.githubusercontent.com/</span>Homebrew<span class="regexp">/install/m</span>aster<span class="regexp">/install)"</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="一、安装homebrew"><a href="#一、安装homebrew" class="headerlink" title="一、安装homebrew"></a>一、安装homebrew</h3><p>brew 的官方网站： <a href="&quot;http://brew.sh/&quot;">http://brew.sh/</a><br>在官方网站对brew的用法进行了详细的描述，安装方法：  在Mac中打开Termal:  输入命令：<br><figure class="highlight awk"><table><tr><td class="code"><pre><span class="line"><span class="regexp">/usr/</span>bin<span class="regexp">/ruby -e "$(curl -fsSL https:/</span><span class="regexp">/raw.githubusercontent.com/</span>Homebrew<span class="regexp">/install/m</span>aster<span class="regexp">/install)"</span></span><br></pre></td></tr></table></figure></p>
 <p>下面是homebrew的一些命令：<br>brew search  搜索软件包<br>brew install  安装软件包<br>brew uninstall   卸载软件包<br>brew info  查询软件包信息<br>brew list  查询已经安装的软件包<br>brew update  更新<br>brew deps  显示包依赖</p>
-<h3 id="二、利用homebrew安装cmake"><a href="#二、利用homebrew安装cmake" class="headerlink" title="二、利用homebrew安装cmake"></a>二、利用homebrew安装cmake</h3><p>输入：<br><figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">brew </span><span class="keyword">install </span>cmake</span><br></pre></td></tr></table></figure></p>
+<h3 id="二、利用homebrew安装cmake"><a href="#二、利用homebrew安装cmake" class="headerlink" title="二、利用homebrew安装cmake"></a>二、利用homebrew安装cmake</h3><p>输入：<br><figure class="highlight mipsasm"><table><tr><td class="code"><pre><span class="line"><span class="keyword">brew </span><span class="keyword">install </span>cmake</span><br></pre></td></tr></table></figure></p>
 <p>如果一切正常就到到下一步，这里可能报下面错误：</p>
 <blockquote>
 <p>Error: The brew link step did not complete successfully<br>The formula built, but is not symlinked into /usr/local<br>Could not symlink share/man/man7/cmake-buildsystem.7<br>/usr/local/share/man/man7 is not writable.</p>
 </blockquote>
 <p>解决方法：<br>先执行：<code>sudo chown -R $(whoami) /usr/local</code><br>再执行：<code>brew link cmake</code></p>
-<h3 id="三、安装glew-glfw3"><a href="#三、安装glew-glfw3" class="headerlink" title="三、安装glew/glfw3"></a>三、安装glew/glfw3</h3><p>执行命令：<br><figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">brew </span><span class="keyword">install </span>glew</span><br><span class="line"><span class="keyword">brew </span><span class="keyword">install </span>glfw3</span><br></pre></td></tr></table></figure></p>
+<h3 id="三、安装glew-glfw3"><a href="#三、安装glew-glfw3" class="headerlink" title="三、安装glew/glfw3"></a>三、安装glew/glfw3</h3><p>执行命令：<br><figure class="highlight mipsasm"><table><tr><td class="code"><pre><span class="line"><span class="keyword">brew </span><span class="keyword">install </span>glew</span><br><span class="line"><span class="keyword">brew </span><span class="keyword">install </span>glfw3</span><br></pre></td></tr></table></figure></p>
 <p>安装成功后，可以在<code>/usr/local/Cellar</code>目录下找到glew/glfw3的.a文件和头文件</p>
 <h3 id="四、下载编译gltools"><a href="#四、下载编译gltools" class="headerlink" title="四、下载编译gltools"></a>四、下载编译gltools</h3><p>下载链接：<a href="https://github.com/HazimGazov/GLTools" target="_blank" rel="noopener">https://github.com/HazimGazov/GLTools</a><br>编译：<br><img src="http://upload-images.jianshu.io/upload_images/1258499-744e792090eea60f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt=""></p>
 <h3 id="五、Xcode使用我们安装好的gl扩展或工具"><a href="#五、Xcode使用我们安装好的gl扩展或工具" class="headerlink" title="五、Xcode使用我们安装好的gl扩展或工具"></a>五、Xcode使用我们安装好的gl扩展或工具</h3><ul>
@@ -607,7 +607,7 @@
                 alt="cyd" />
             
               <p class="site-author-name" itemprop="name">cyd</p>
-              <p class="site-description motion-element" itemprop="description">iOS、AVFoundation、OpenGL ES</p>
+              <p class="site-description motion-element" itemprop="description">Unity、iOS、AVFoundation、OpenGL ES</p>
           </div>
 
           
@@ -617,7 +617,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-count">34</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -792,7 +792,7 @@
       <i class="fa fa-area-chart"></i>
     </span>
     
-    <span title="站点总字数">229k</span>
+    <span title="站点总字数">231k</span>
   
 
   
