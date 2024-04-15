@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-flash.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.2.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicont.png?v=6.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png?v=6.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png?v=6.2.0">
+
+
+  <link rel="mask-icon" href="/images/favicont.png?v=6.2.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.2.0',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="在AlamofireImage中一共就只有5个类加一些扩展12345678910// 错误处理类，继承自Error，主要有requestCancelled(请求取消)、imageSerializationFailed(请求失败)两种错误AFIError// 定义图片对象，主要用来适配mac(NSImage)和ios(UIImage)平台Image// 图片内存缓存对象ImageCache// 图片">
+<meta name="keywords" content="Image">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AlamofireImage 源码阅读">
+<meta property="og:url" content="https://cdcyd.github.io/2018/05/28/AlamofireImage 源码阅读/index.html">
+<meta property="og:site_name" content="cyd’s blog">
+<meta property="og:description" content="在AlamofireImage中一共就只有5个类加一些扩展12345678910// 错误处理类，继承自Error，主要有requestCancelled(请求取消)、imageSerializationFailed(请求失败)两种错误AFIError// 定义图片对象，主要用来适配mac(NSImage)和ios(UIImage)平台Image// 图片内存缓存对象ImageCache// 图片">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-06-29T06:27:01.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="AlamofireImage 源码阅读">
+<meta name="twitter:description" content="在AlamofireImage中一共就只有5个类加一些扩展12345678910// 错误处理类，继承自Error，主要有requestCancelled(请求取消)、imageSerializationFailed(请求失败)两种错误AFIError// 定义图片对象，主要用来适配mac(NSImage)和ios(UIImage)平台Image// 图片内存缓存对象ImageCache// 图片">
+
+
+
+
+
+
+  <link rel="canonical" href="https://cdcyd.github.io/2018/05/28/AlamofireImage 源码阅读/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>AlamofireImage 源码阅读 | cyd’s blog</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">cyd’s blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+    <a href="/about/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-user"></i> <br />关于</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+  
+  
+  
+    
+      
+    
+    <a href="https://github.com/cdcyd" class="github-corner" target="_blank" title="Follow me on GitHub" aria-label="Follow me on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#222; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg>
+    
+      </a>
+    
+
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://cdcyd.github.io/2018/05/28/AlamofireImage 源码阅读/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="cyd">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/icon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="cyd’s blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">AlamofireImage 源码阅读
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-05-28 18:00:00" itemprop="dateCreated datePublished" datetime="2018-05-28T18:00:00+08:00">2018-05-28</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-06-29 14:27:01" itemprop="dateModified" datetime="2018-06-29T14:27:01+08:00">2018-06-29</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/源码阅读/" itemprop="url" rel="index"><span itemprop="name">源码阅读</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">18k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">15 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在AlamofireImage中一共就只有5个类加一些扩展<br><figure class="highlight sqf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 错误处理类，继承自Error，主要有requestCancelled(请求取消)、imageSerializationFailed(请求失败)两种错误</span></span><br><span class="line">AFIError</span><br><span class="line"><span class="comment">// 定义图片对象，主要用来适配mac(NSImage)和ios(UIImage)平台</span></span><br><span class="line"><span class="built_in">Image</span></span><br><span class="line"><span class="comment">// 图片内存缓存对象</span></span><br><span class="line">ImageCache</span><br><span class="line"><span class="comment">// 图片下载对象(下载基于Alamofire)</span></span><br><span class="line">ImageDownloader</span><br><span class="line"><span class="comment">// 图片滤镜对象(CoreGraphics切圆角，CoreImage滤镜)</span></span><br><span class="line">ImageFilter</span><br></pre></td></tr></table></figure></p>
+<h2 id="一、图片加载过程"><a href="#一、图片加载过程" class="headerlink" title="一、图片加载过程"></a>一、图片加载过程</h2><p>AlamofireImage中的扩展定义了很多快速对UI控件设置图片的方法，我挑其中一个来详解AlamofireImage是怎样将图片加载到视图上的<br><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 该方法是UIImageView的一个扩展方法，其它控件的扩展方法都差不多一样</span></span><br><span class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">af_setImage</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">        withURLRequest urlRequest: URLRequestConvertible,</span></span></span><br><span class="line"><span class="function"><span class="params">        placeholderImage: UIImage? = <span class="literal">nil</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="built_in">filter</span>: ImageFilter? = <span class="literal">nil</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">        progress: ImageDownloader.ProgressHandler? = <span class="literal">nil</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">        progressQueue: DispatchQueue = DispatchQueue.main,</span></span></span><br><span class="line"><span class="function"><span class="params">        imageTransition: ImageTransition = .noTransition,</span></span></span><br><span class="line"><span class="function"><span class="params">        runImageTransitionIfCached: Bool = <span class="literal">false</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">        completion: <span class="params">(<span class="params">(DataResponse&lt;UIImage&gt;)</span></span></span></span> -&gt; <span class="type">Void</span>)? = <span class="literal">nil</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">/* 1.判断ImageView是否正在下载该url图片</span></span><br><span class="line"><span class="comment">         注：Alamofire通过runtime将正在下载图片的请求对象RequestReceipt绑定到af_activeRequestReceipt属性， 在请求完成后再将af_activeRequestReceipt置为nil，</span></span><br><span class="line"><span class="comment">         所以如果ImageView正在下载图片，而你此时再次请求下载图片时，它会进行判断，</span></span><br><span class="line"><span class="comment">         如果两次的url相同，则不需要再次下载了，所有这里会立即返回错误："取消了一次请求"</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">        <span class="keyword">guard</span> !isURLRequestURLEqualToActiveRequestURL(urlRequest) <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">let</span> error = <span class="type">AFIError</span>.requestCancelled</span><br><span class="line">            <span class="keyword">let</span> response = <span class="type">DataResponse</span>&lt;<span class="type">UIImage</span>&gt;(request: <span class="literal">nil</span>, response: <span class="literal">nil</span>, data: <span class="literal">nil</span>, result: .failure(error))</span><br><span class="line">            completion?(response)</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 2.取消之前的所有请求</span></span><br><span class="line">        af_cancelImageRequest()</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 3.获取一个下载器</span></span><br><span class="line">        <span class="keyword">let</span> imageDownloader = af_imageDownloader ?? <span class="type">UIImageView</span>.af_sharedImageDownloader</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 4.获取下载器的缓存对象</span></span><br><span class="line">        <span class="keyword">let</span> imageCache = imageDownloader.imageCache</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 5.如果存在缓存</span></span><br><span class="line">        <span class="keyword">if</span>  <span class="keyword">let</span> request = urlRequest.urlRequest,</span><br><span class="line">            <span class="keyword">let</span> image = imageCache?.image(<span class="keyword">for</span>: request, withIdentifier: <span class="built_in">filter</span>?.identifier)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">// 构建一个返回对象</span></span><br><span class="line">            <span class="keyword">let</span> response = <span class="type">DataResponse</span>&lt;<span class="type">UIImage</span>&gt;(request: request, response: <span class="literal">nil</span>, data: <span class="literal">nil</span>, result: .success(image))</span><br><span class="line">            <span class="keyword">if</span> runImageTransitionIfCached &#123;</span><br><span class="line">                <span class="comment">// 如果有图片加载动画，加载图片并执行动画，并执行完成回调闭包</span></span><br><span class="line">                <span class="keyword">let</span> tinyDelay = <span class="type">DispatchTime</span>.now() + <span class="type">Double</span>(<span class="type">Int64</span>(<span class="number">0.001</span> * <span class="type">Float</span>(<span class="type">NSEC_PER_SEC</span>))) / <span class="type">Double</span>(<span class="type">NSEC_PER_SEC</span>)</span><br><span class="line">                <span class="type">DispatchQueue</span>.main.asyncAfter(deadline: tinyDelay) &#123;</span><br><span class="line">                    <span class="keyword">self</span>.run(imageTransition, with: image)</span><br><span class="line">                    completion?(response)</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// 如果没有图片加载动画，直接加载图片，并执行完成回调闭包</span></span><br><span class="line">                <span class="keyword">self</span>.image = image</span><br><span class="line">                completion?(response)</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 6.如果没有缓存，则先加载占位图</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">let</span> placeholderImage = placeholderImage &#123; <span class="keyword">self</span>.image = placeholderImage &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 生成唯一的下载标识符，以检查下载在请求中是否发生了更改</span></span><br><span class="line">        <span class="keyword">let</span> downloadID = <span class="type">UUID</span>().uuidString</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 7.开始下载图片</span></span><br><span class="line">        <span class="keyword">let</span> requestReceipt = imageDownloader.download(</span><br><span class="line">            urlRequest,</span><br><span class="line">            receiptID: downloadID,</span><br><span class="line">            <span class="built_in">filter</span>: <span class="built_in">filter</span>,</span><br><span class="line">            progress: progress,</span><br><span class="line">            progressQueue: progressQueue,</span><br><span class="line">            completion: &#123; [<span class="keyword">weak</span> <span class="keyword">self</span>] response <span class="keyword">in</span></span><br><span class="line">                <span class="comment">// 如果ImageView当前下载图片的url和返回的url相同，并且下载的标识符也相同，说明已经下载过了，所以这里直接返回完成，不需要再做其它了</span></span><br><span class="line">                <span class="keyword">guard</span> <span class="keyword">let</span> strongSelf = <span class="keyword">self</span>,</span><br><span class="line">                          strongSelf.isURLRequestURLEqualToActiveRequestURL(response.request) &amp;&amp;</span><br><span class="line">                          strongSelf.af_activeRequestReceipt?.receiptID == downloadID <span class="keyword">else</span> &#123;</span><br><span class="line">                    completion?(response)</span><br><span class="line">                    <span class="keyword">return</span></span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// 8.下载图片成功，加载图片</span></span><br><span class="line">                <span class="keyword">if</span> <span class="keyword">let</span> image = response.result.value &#123;</span><br><span class="line">                    strongSelf.run(imageTransition, with: image)</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// 9.清除当前的下载票据，回调加载下载完成</span></span><br><span class="line">                strongSelf.af_activeRequestReceipt = <span class="literal">nil</span></span><br><span class="line">                completion?(response)</span><br><span class="line">            &#125;</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 存储ImageView正在请求的信息</span></span><br><span class="line">        af_activeRequestReceipt = requestReceipt</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<p>下面是下载类核心方法和注解<br><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br></pre></td><td class="code"><pre><span class="line">@discardableResult</span><br><span class="line">    <span class="keyword">open</span> <span class="function"><span class="keyword">func</span> <span class="title">download</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="number">_</span> urlRequest: URLRequestConvertible,</span></span></span><br><span class="line"><span class="function"><span class="params">        receiptID: String = UUID<span class="params">()</span></span></span>.uuidString,</span><br><span class="line">        <span class="built_in">filter</span>: <span class="type">ImageFilter</span>? = <span class="literal">nil</span>,</span><br><span class="line">        progress: <span class="type">ProgressHandler</span>? = <span class="literal">nil</span>,</span><br><span class="line">        progressQueue: <span class="type">DispatchQueue</span> = <span class="type">DispatchQueue</span>.main,</span><br><span class="line">        completion: <span class="type">CompletionHandler</span>?)</span><br><span class="line">        -&gt; <span class="type">RequestReceipt</span>?</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">var</span> request: <span class="type">DataRequest</span>!</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 异步加载图片</span></span><br><span class="line">        synchronizationQueue.sync &#123;</span><br><span class="line">            <span class="comment">// 再次判断该请求是否正在请求，如果是，则在responseHandlers属性中添加本次的回调闭包(多个view同时加载同一张图片的情况)</span></span><br><span class="line">            <span class="comment">// 注：ImageDownloader在responseHandlers属性中，存储正在下载的请求，以防止相同的请求多次发出，</span></span><br><span class="line">            <span class="comment">// 这样不仅浪费流量还会影响加载速度，如果有多个相同的请求时，我们只会发出一个，在完成后一起回调</span></span><br><span class="line">            <span class="keyword">let</span> urlID = <span class="type">ImageDownloader</span>.urlIdentifier(<span class="keyword">for</span>: urlRequest)</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">let</span> responseHandler = <span class="keyword">self</span>.responseHandlers[urlID] &#123;</span><br><span class="line">                responseHandler.operations.append((receiptID: receiptID, <span class="built_in">filter</span>: <span class="built_in">filter</span>, completion: completion))</span><br><span class="line">                request = responseHandler.request</span><br><span class="line">                <span class="keyword">return</span></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// (内存缓存)如果允许缓存，再次尝试从缓存加载图像</span></span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">let</span> request = urlRequest.urlRequest &#123;</span><br><span class="line">                <span class="keyword">switch</span> request.cachePolicy &#123;</span><br><span class="line">                <span class="keyword">case</span> .useProtocolCachePolicy, .returnCacheDataElseLoad, .returnCacheDataDontLoad:</span><br><span class="line">                    <span class="keyword">if</span> <span class="keyword">let</span> image = <span class="keyword">self</span>.imageCache?.image(<span class="keyword">for</span>: request, withIdentifier: <span class="built_in">filter</span>?.identifier) &#123;</span><br><span class="line">                        <span class="type">DispatchQueue</span>.main.async &#123;</span><br><span class="line">                            <span class="keyword">let</span> response = <span class="type">DataResponse</span>&lt;<span class="type">Image</span>&gt;(</span><br><span class="line">                                request: urlRequest.urlRequest,</span><br><span class="line">                                response: <span class="literal">nil</span>,</span><br><span class="line">                                data: <span class="literal">nil</span>,</span><br><span class="line">                                result: .success(image)</span><br><span class="line">                            )</span><br><span class="line">                            completion?(response)</span><br><span class="line">                        &#125;</span><br><span class="line">                        <span class="keyword">return</span></span><br><span class="line">                    &#125;</span><br><span class="line">                <span class="keyword">default</span>:</span><br><span class="line">                    <span class="keyword">break</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 创建下载器</span></span><br><span class="line">            request = <span class="keyword">self</span>.sessionManager.request(urlRequest)</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">let</span> credential = <span class="keyword">self</span>.credential &#123;</span><br><span class="line">                request.authenticate(usingCredential: credential)</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            request.validate()</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">let</span> progress = progress &#123;</span><br><span class="line">                request.downloadProgress(queue: progressQueue, closure: progress)</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 生成唯一的下载标识符，以检查下载过程中请求是否发生了更改</span></span><br><span class="line">            <span class="keyword">let</span> handlerID = <span class="type">UUID</span>().uuidString</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 开始请求(这其中默认会去获取NSURLCache的缓存，内存缓存和磁盘缓存均有)</span></span><br><span class="line">            request.response(queue: <span class="keyword">self</span>.responseQueue, responseSerializer: imageResponseSerializer, completionHandler: &#123; [<span class="keyword">weak</span> <span class="keyword">self</span>] response <span class="keyword">in</span></span><br><span class="line">                    <span class="keyword">guard</span> <span class="keyword">let</span> strongSelf = <span class="keyword">self</span>, <span class="keyword">let</span> request = response.request <span class="keyword">else</span> &#123; <span class="keyword">return</span> &#125;</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">defer</span> &#123;</span><br><span class="line">                        <span class="comment">// 减少当前需要下载的任务数</span></span><br><span class="line">                        strongSelf.safelyDecrementActiveRequestCount()</span><br><span class="line">                        <span class="comment">// 如果还有，则开始下一个下载</span></span><br><span class="line">                        strongSelf.safelyStartNextRequestIfNecessary()</span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                    <span class="comment">// 将该请求从正在下载任务中移除</span></span><br><span class="line">                    <span class="keyword">let</span> handler = strongSelf.safelyFetchResponseHandler(withURLIdentifier: urlID)</span><br><span class="line">                    <span class="keyword">guard</span> handler?.handlerID == handlerID <span class="keyword">else</span> &#123; <span class="keyword">return</span> &#125;</span><br><span class="line">                    <span class="keyword">guard</span> <span class="keyword">let</span> responseHandler = strongSelf.safelyRemoveResponseHandler(withURLIdentifier: urlID) <span class="keyword">else</span> &#123;</span><br><span class="line">                        <span class="keyword">return</span></span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">switch</span> response.result &#123;</span><br><span class="line">                    <span class="keyword">case</span> .success(<span class="keyword">let</span> image):</span><br><span class="line">                        <span class="keyword">var</span> filteredImages: [<span class="type">String</span>: <span class="type">Image</span>] = [:]</span><br><span class="line"></span><br><span class="line">                        <span class="comment">// 下载完成</span></span><br><span class="line">                        <span class="keyword">for</span> (<span class="number">_</span>, <span class="built_in">filter</span>, completion) <span class="keyword">in</span> responseHandler.operations &#123;</span><br><span class="line">                            <span class="keyword">var</span> filteredImage: <span class="type">Image</span></span><br><span class="line"></span><br><span class="line">                            <span class="keyword">if</span> <span class="keyword">let</span> <span class="built_in">filter</span> = <span class="built_in">filter</span> &#123;</span><br><span class="line">                                <span class="keyword">if</span> <span class="keyword">let</span> alreadyFilteredImage = filteredImages[<span class="built_in">filter</span>.identifier] &#123;</span><br><span class="line">                                    filteredImage = alreadyFilteredImage</span><br><span class="line">                                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                                    filteredImage = <span class="built_in">filter</span>.<span class="built_in">filter</span>(image)</span><br><span class="line">                                    filteredImages[<span class="built_in">filter</span>.identifier] = filteredImage</span><br><span class="line">                                &#125;</span><br><span class="line">                            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                                filteredImage = image</span><br><span class="line">                            &#125;</span><br><span class="line"></span><br><span class="line">                            <span class="comment">// 内存缓存图片</span></span><br><span class="line">                            strongSelf.imageCache?.add(filteredImage, <span class="keyword">for</span>: request, withIdentifier: <span class="built_in">filter</span>?.identifier)</span><br><span class="line"></span><br><span class="line">                            <span class="comment">// 返回Image</span></span><br><span class="line">                            <span class="type">DispatchQueue</span>.main.async &#123;</span><br><span class="line">                                <span class="keyword">let</span> response = <span class="type">DataResponse</span>&lt;<span class="type">Image</span>&gt;(</span><br><span class="line">                                    request: response.request,</span><br><span class="line">                                    response: response.response,</span><br><span class="line">                                    data: response.data,</span><br><span class="line">                                    result: .success(filteredImage),</span><br><span class="line">                                    timeline: response.timeline</span><br><span class="line">                                )</span><br><span class="line">                                completion?(response)</span><br><span class="line">                            &#125;</span><br><span class="line">                        &#125;</span><br><span class="line">                    <span class="keyword">case</span> .failure:</span><br><span class="line">                        <span class="comment">// 下载失败</span></span><br><span class="line">                        <span class="keyword">for</span> (<span class="number">_</span>, <span class="number">_</span>, completion) <span class="keyword">in</span> responseHandler.operations &#123;</span><br><span class="line">                            <span class="type">DispatchQueue</span>.main.async &#123; completion?(response) &#125;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            )</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 存储正在下载的任务</span></span><br><span class="line">            <span class="keyword">let</span> responseHandler = <span class="type">ResponseHandler</span>(</span><br><span class="line">                request: request,</span><br><span class="line">                handlerID: handlerID,</span><br><span class="line">                receiptID: receiptID,</span><br><span class="line">                <span class="built_in">filter</span>: <span class="built_in">filter</span>,</span><br><span class="line">                completion: completion</span><br><span class="line">            )</span><br><span class="line">            <span class="keyword">self</span>.responseHandlers[urlID] = responseHandler</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 开始任务或者加载到任务队列中</span></span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">self</span>.isActiveRequestCountBelowMaximumLimit() &#123;</span><br><span class="line">                <span class="keyword">self</span>.start(request)</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">self</span>.enqueue(request)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">let</span> request = request &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="type">RequestReceipt</span>(request: request, receiptID: receiptID)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<p>总结下载过程<br>1.在内存缓存对象(ImageCache)中获取缓存，如果有则返回图片<br>2.在NSURLCache中获取缓存(内存缓存+磁盘缓存)，如果有则返回图片<br>3.开始网络下载图片，成功后返回图片<br>4.缓存图片<br>5.检查是否使用滤镜、加载动画等加载图片</p>
+<h2 id="二、缓存实现"><a href="#二、缓存实现" class="headerlink" title="二、缓存实现"></a>二、缓存实现</h2><p>1.ImageCache，实际上它只是一个协议，真正缓存的对象是CachedImage<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CachedImage</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 图片</span></span><br><span class="line">    <span class="keyword">let</span> image: Image</span><br><span class="line">    <span class="comment">// 标识符</span></span><br><span class="line">    <span class="keyword">let</span> identifier: <span class="built_in">String</span></span><br><span class="line">    <span class="comment">// 图片大小</span></span><br><span class="line">    <span class="keyword">let</span> totalBytes: UInt64</span><br><span class="line">    <span class="comment">// 最后修改时间</span></span><br><span class="line">    <span class="keyword">var</span> lastAccessDate: <span class="built_in">Date</span> </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在ImageCache协议中有如下几个方法<br><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// 通过标识符添加一个缓存图片</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">add</span><span class="params">(<span class="number">_</span> image: Image, withIdentifier identifier: String)</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/// 通过标识符移除一个图片</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">removeImage</span><span class="params">(withIdentifier identifier: String)</span></span> -&gt; <span class="type">Bool</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/// 移除所有图片</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">removeAllImages</span><span class="params">()</span></span> -&gt; <span class="type">Bool</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/// 通过标识符获取图片</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">image</span><span class="params">(withIdentifier identifier: String)</span></span> -&gt; <span class="type">Image</span>?</span><br></pre></td></tr></table></figure></p>
+<p>实际对图片存储的类是AutoPurgingImageCache，它实现了ImageCache协议，下再来看一下它的一些属性<br><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 最大内存容量</span></span><br><span class="line"><span class="keyword">open</span> <span class="keyword">let</span> memoryCapacity: <span class="type">UInt64</span></span><br><span class="line"><span class="comment">// 当内存容量达到最大值，清除后的剩余内存(当内存达到最大值时：清除部分 = memoryCapacity - preferredMemoryUsageAfterPurge)</span></span><br><span class="line"><span class="keyword">open</span> <span class="keyword">let</span> preferredMemoryUsageAfterPurge: <span class="type">UInt64</span></span><br><span class="line"><span class="comment">// 操作线程</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">let</span> synchronizationQueue: <span class="type">DispatchQueue</span></span><br><span class="line"><span class="comment">// 缓存(说明AlamofireImage的图片缓存是一个字典)</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">var</span> cachedImages: [<span class="type">String</span>: <span class="type">CachedImage</span>]</span><br><span class="line"><span class="comment">// 当前内存</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">var</span> currentMemoryUsage: <span class="type">UInt64</span></span><br></pre></td></tr></table></figure></p>
+<p>下面是添加缓存的核心函数<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">open func add(_ image: Image, withIdentifier identifier: String) &#123;</span><br><span class="line">        synchronizationQueue.async(flags: [.barrier]) &#123;</span><br><span class="line">            <span class="comment">// 缓存图片，并计算当前的内存缓存大小</span></span><br><span class="line">            let cachedImage = CachedImage(image, identifier: identifier)</span><br><span class="line">            <span class="keyword">if</span> let previousCachedImage = self<span class="selector-class">.cachedImages</span>[identifier] &#123;</span><br><span class="line">                self<span class="selector-class">.currentMemoryUsage</span> -= previousCachedImage.totalBytes</span><br><span class="line">            &#125;</span><br><span class="line">            self<span class="selector-class">.cachedImages</span>[identifier] = cachedImage</span><br><span class="line">            self<span class="selector-class">.currentMemoryUsage</span> += cachedImage.totalBytes</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 这里的barrier，保证了当上面的图片缓存完成之后才会执行下面的代码</span></span><br><span class="line">        synchronizationQueue.async(flags: [.barrier]) &#123;</span><br><span class="line">            <span class="comment">// 当前缓存大于最大缓存时</span></span><br><span class="line">            <span class="keyword">if</span> self<span class="selector-class">.currentMemoryUsage</span> &gt; self<span class="selector-class">.memoryCapacity</span> &#123;</span><br><span class="line">                <span class="comment">// 计算需要清除的缓存大小</span></span><br><span class="line">                let bytesToPurge = self<span class="selector-class">.currentMemoryUsage</span> - self.preferredMemoryUsageAfterPurge</span><br><span class="line">                <span class="comment">// 对图片进行时间排序，我们需要清除较早的一些图片</span></span><br><span class="line">                <span class="selector-tag">var</span> sortedImages = self<span class="selector-class">.cachedImages</span><span class="selector-class">.map</span> &#123; $<span class="number">1</span> &#125;</span><br><span class="line">                sortedImages<span class="selector-class">.sort</span> &#123;</span><br><span class="line">                    let date1 = $<span class="number">0</span>.lastAccessDate</span><br><span class="line">                    let date2 = $<span class="number">1</span>.lastAccessDate</span><br><span class="line">                    return date1.timeIntervalSince(date2) &lt; <span class="number">0.0</span></span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// 开始清除缓存</span></span><br><span class="line">                <span class="selector-tag">var</span> bytesPurged = UInt64(<span class="number">0</span>)</span><br><span class="line">                <span class="keyword">for</span> cachedImage <span class="keyword">in</span> sortedImages &#123;</span><br><span class="line">                    self<span class="selector-class">.cachedImages</span><span class="selector-class">.removeValue</span>(forKey: cachedImage.identifier)</span><br><span class="line">                    bytesPurged += cachedImage.totalBytes</span><br><span class="line">                    <span class="keyword">if</span> bytesPurged &gt;= bytesToPurge &#123;</span><br><span class="line">                        break</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// 清除缓存完成，设置当前缓存的大小</span></span><br><span class="line">                self<span class="selector-class">.currentMemoryUsage</span> -= bytesPurged</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<p>2.NSURLCache，它我这里就不具体讲了，有兴趣的可以看这篇文章   <a href="http://nshipster.cn/nsurlcache/" target="_blank" rel="noopener">http://nshipster.cn/nsurlcache/</a></p>
+<h2 id="三、加载动画和滤镜"><a href="#三、加载动画和滤镜" class="headerlink" title="三、加载动画和滤镜"></a>三、加载动画和滤镜</h2><p>对于这一部分内容，我自己也没有使用过，所以下面只贴出源码加注释，有兴趣的读者可以自己去研究</p>
+<p>1.动画<br><figure class="highlight lasso"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 加载动画(是用UIView的动画来实现的)</span></span><br><span class="line"><span class="keyword">public</span> func run(_ imageTransition: ImageTransition, <span class="keyword">with</span> image: Image) &#123;</span><br><span class="line">    UIView.transition(</span><br><span class="line">        <span class="keyword">with</span>: <span class="built_in">self</span>,</span><br><span class="line">        <span class="built_in">duration</span>: imageTransition.<span class="built_in">duration</span>,</span><br><span class="line">        options: imageTransition.animationOptions,</span><br><span class="line">        animations: &#123; imageTransition.animations(<span class="built_in">self</span>, image) &#125;,</span><br><span class="line">        completion: imageTransition.completion</span><br><span class="line">    )</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> enum ImageTransition &#123;</span><br><span class="line">    <span class="comment">// 所有可选的动画类型</span></span><br><span class="line">    <span class="comment">// 没有动画</span></span><br><span class="line">    <span class="keyword">case</span> noTransition</span><br><span class="line">    <span class="comment">// 淡入淡出</span></span><br><span class="line">    <span class="keyword">case</span> crossDissolve(TimeInterval)</span><br><span class="line">    <span class="comment">// 向下翻页</span></span><br><span class="line">    <span class="keyword">case</span> curlDown(TimeInterval)</span><br><span class="line">    <span class="comment">// 向上翻页</span></span><br><span class="line">    <span class="keyword">case</span> curlUp(TimeInterval)</span><br><span class="line">    <span class="comment">// 从下、左、右、上翻出</span></span><br><span class="line">    <span class="keyword">case</span> flipFromBottom(TimeInterval)</span><br><span class="line">    <span class="keyword">case</span> flipFromLeft(TimeInterval)</span><br><span class="line">    <span class="keyword">case</span> flipFromRight(TimeInterval)</span><br><span class="line">    <span class="keyword">case</span> flipFromTop(TimeInterval)</span><br><span class="line">    <span class="comment">// 自定义动画</span></span><br><span class="line">    <span class="keyword">case</span> custom(</span><br><span class="line">        <span class="built_in">duration</span>: TimeInterval,</span><br><span class="line">        animationOptions: UIViewAnimationOptions,</span><br><span class="line">        animations: (UIImageView, Image) -&gt; <span class="literal">Void</span>,</span><br><span class="line">        completion: ((Bool) -&gt; <span class="literal">Void</span>)?</span><br><span class="line">    )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>2.滤镜<br><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 将图片变化到指定大小</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">struct</span> <span class="title">ScaledToSizeFilter</span>: <span class="title">ImageFilter</span>, <span class="title">Sizable</span> </span>&#123;</span><br><span class="line">    <span class="comment">/// 变换后的大小</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">let</span> size: <span class="type">CGSize</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">init</span>(size: <span class="type">CGSize</span>) &#123;</span><br><span class="line">        <span class="keyword">self</span>.size = size</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/// 实现函数</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">var</span> <span class="built_in">filter</span>: (<span class="type">Image</span>) -&gt; <span class="type">Image</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> &#123; image <span class="keyword">in</span></span><br><span class="line">            <span class="keyword">return</span> image.af_imageScaled(to: <span class="keyword">self</span>.size)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 拉伸适应</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">struct</span> <span class="title">AspectScaledToFitSizeFilter</span>: <span class="title">ImageFilter</span>, <span class="title">Sizable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">let</span> size: <span class="type">CGSize</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">init</span>(size: <span class="type">CGSize</span>) &#123;</span><br><span class="line">        <span class="keyword">self</span>.size = size</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/// 实现函数</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">var</span> <span class="built_in">filter</span>: (<span class="type">Image</span>) -&gt; <span class="type">Image</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> &#123; image <span class="keyword">in</span></span><br><span class="line">            <span class="keyword">return</span> image.af_imageAspectScaled(toFit: <span class="keyword">self</span>.size)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 拉伸铺满</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">struct</span> <span class="title">AspectScaledToFillSizeFilter</span>: <span class="title">ImageFilter</span>, <span class="title">Sizable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">let</span> size: <span class="type">CGSize</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">init</span>(size: <span class="type">CGSize</span>) &#123;</span><br><span class="line">        <span class="keyword">self</span>.size = size</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/// 实现函数</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">var</span> <span class="built_in">filter</span>: (<span class="type">Image</span>) -&gt; <span class="type">Image</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> &#123; image <span class="keyword">in</span></span><br><span class="line">            <span class="keyword">return</span> image.af_imageAspectScaled(toFill: <span class="keyword">self</span>.size)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 圆角</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">struct</span> <span class="title">RoundedCornersFilter</span>: <span class="title">ImageFilter</span>, <span class="title">Roundable</span> </span>&#123;</span><br><span class="line">    <span class="comment">/// 圆角大小 </span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">let</span> radius: <span class="type">CGFloat</span></span><br><span class="line">    <span class="comment">/// 圆角的大小需不需要进行缩放radius / scale</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">let</span> divideRadiusByImageScale: <span class="type">Bool</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">init</span>(radius: <span class="type">CGFloat</span>, divideRadiusByImageScale: <span class="type">Bool</span> = <span class="literal">false</span>) &#123;</span><br><span class="line">        <span class="keyword">self</span>.radius = radius</span><br><span class="line">        <span class="keyword">self</span>.divideRadiusByImageScale = divideRadiusByImageScale</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/// 实现函数</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">var</span> <span class="built_in">filter</span>: (<span class="type">Image</span>) -&gt; <span class="type">Image</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> &#123; image <span class="keyword">in</span></span><br><span class="line">            <span class="keyword">return</span> image.af_imageRounded(</span><br><span class="line">                withCornerRadius: <span class="keyword">self</span>.radius,</span><br><span class="line">                divideRadiusByImageScale: <span class="keyword">self</span>.divideRadiusByImageScale</span><br><span class="line">            )</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 圆形图片</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">struct</span> <span class="title">CircleFilter</span>: <span class="title">ImageFilter</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">init</span>() &#123;&#125;</span><br><span class="line">    <span class="comment">/// 实现函数</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">var</span> <span class="built_in">filter</span>: (<span class="type">Image</span>) -&gt; <span class="type">Image</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> &#123; image <span class="keyword">in</span></span><br><span class="line">            <span class="keyword">return</span> image.af_imageRoundedIntoCircle()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// CoreImage 滤镜</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">protocol</span> <span class="title">CoreImageFilter</span>: <span class="title">ImageFilter</span> </span>&#123;</span><br><span class="line">    <span class="comment">/// 滤镜名称</span></span><br><span class="line">    <span class="keyword">var</span> filterName: <span class="type">String</span> &#123; <span class="keyword">get</span> &#125;</span><br><span class="line">    <span class="comment">/// 滤镜参数</span></span><br><span class="line">    <span class="keyword">var</span> parameters: [<span class="type">String</span>: <span class="type">Any</span>] &#123; <span class="keyword">get</span> &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 高斯模糊滤镜</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">struct</span> <span class="title">BlurFilter</span>: <span class="title">ImageFilter</span>, <span class="title">CoreImageFilter</span> </span>&#123;</span><br><span class="line">    <span class="comment">/// 高斯滤镜名称</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">let</span> filterName = <span class="string">"CIGaussianBlur"</span></span><br><span class="line">    <span class="comment">/// 参数</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">let</span> parameters: [<span class="type">String</span>: <span class="type">Any</span>]</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">init</span>(blurRadius: <span class="type">UInt</span> = <span class="number">10</span>) &#123;</span><br><span class="line">        <span class="keyword">self</span>.parameters = [<span class="string">"inputRadius"</span>: blurRadius]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>3.CoreImage 滤镜具体实现的核心函数<br><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">extension</span> <span class="title">UIImage</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">af_imageFiltered</span><span class="params">(withCoreImageFilter name: String, parameters: [String: Any]? = <span class="literal">nil</span>)</span></span> -&gt; <span class="type">UIImage</span>? &#123;</span><br><span class="line">        <span class="keyword">var</span> image: <span class="type">CoreImage</span>.<span class="type">CIImage</span>? = ciImage</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> image == <span class="literal">nil</span>, <span class="keyword">let</span> <span class="type">CGImage</span> = <span class="keyword">self</span>.cgImage &#123;</span><br><span class="line">            image = <span class="type">CoreImage</span>.<span class="type">CIImage</span>(cgImage: <span class="type">CGImage</span>)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">guard</span> <span class="keyword">let</span> coreImage = image <span class="keyword">else</span> &#123; <span class="keyword">return</span> <span class="literal">nil</span> &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">let</span> context = <span class="type">CIContext</span>(options: [kCIContextPriorityRequestLow: <span class="literal">true</span>])</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> parameters: [<span class="type">String</span>: <span class="type">Any</span>] = parameters ?? [:]</span><br><span class="line">        parameters[kCIInputImageKey] = coreImage</span><br><span class="line"></span><br><span class="line">        <span class="keyword">guard</span> <span class="keyword">let</span> <span class="built_in">filter</span> = <span class="type">CIFilter</span>(name: name, withInputParameters: parameters) <span class="keyword">else</span> &#123; <span class="keyword">return</span> <span class="literal">nil</span> &#125;</span><br><span class="line">        <span class="keyword">guard</span> <span class="keyword">let</span> outputImage = <span class="built_in">filter</span>.outputImage <span class="keyword">else</span> &#123; <span class="keyword">return</span> <span class="literal">nil</span> &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">let</span> cgImageRef = context.createCGImage(outputImage, from: outputImage.extent)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="type">UIImage</span>(cgImage: cgImageRef!, scale: scale, orientation: imageOrientation)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Image/" rel="tag"># Image</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/25/SDWebImage 源码阅读(缓存)/" rel="next" title="SDWebImage 源码阅读(缓存)">
+                <i class="fa fa-chevron-left"></i> SDWebImage 源码阅读(缓存)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/06/04/MJRefresh 源码阅读/" rel="prev" title="MJRefresh 源码阅读">
+                MJRefresh 源码阅读 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/icon.jpg"
+                alt="cyd" />
+            
+              <p class="site-author-name" itemprop="name">cyd</p>
+              <p class="site-description motion-element" itemprop="description">iOS、AVFoundation、OpenGL ES</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/cdcyd" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:1035060416@qq.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-qq"></i>E-Mail</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.jianshu.com/u/2841ca1b2535" title="简书主页" target="_blank">简书主页</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一、图片加载过程"><span class="nav-number">1.</span> <span class="nav-text">一、图片加载过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二、缓存实现"><span class="nav-number">2.</span> <span class="nav-text">二、缓存实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三、加载动画和滤镜"><span class="nav-number">3.</span> <span class="nav-text">三、加载动画和滤镜</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2024</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">cyd</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">229k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">3:false</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.4.4</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Pisces</a> v6.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.2.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.2.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.2.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.2.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.2.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.2.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.2.0"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('Copied')
+          else $(this).text('Copy failed')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

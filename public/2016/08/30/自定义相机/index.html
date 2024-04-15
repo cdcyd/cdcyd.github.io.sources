@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-flash.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.2.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicont.png?v=6.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png?v=6.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png?v=6.2.0">
+
+
+  <link rel="mask-icon" href="/images/favicont.png?v=6.2.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.2.0',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="目录  相机基本实现步骤 捕捉会话——AVCaptureSession 捕捉输入——AVCaptureDeviceInput 捕捉预览——AVCaptureVideoPreviewLayer/OpenGL ES 捕捉连接——AVCaptureConnection 拍照——AVCaptureStillImageOutput 音频——AVCaptureAudioDataOutput 视频——AVC">
+<meta name="keywords" content="AVFoundation">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AVFoundation自定义相机详解">
+<meta property="og:url" content="https://cdcyd.github.io/2016/08/30/自定义相机/index.html">
+<meta property="og:site_name" content="cyd’s blog">
+<meta property="og:description" content="目录  相机基本实现步骤 捕捉会话——AVCaptureSession 捕捉输入——AVCaptureDeviceInput 捕捉预览——AVCaptureVideoPreviewLayer/OpenGL ES 捕捉连接——AVCaptureConnection 拍照——AVCaptureStillImageOutput 音频——AVCaptureAudioDataOutput 视频——AVC">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1258499-8e2cdea415352eb6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2018-10-30T06:53:55.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="AVFoundation自定义相机详解">
+<meta name="twitter:description" content="目录  相机基本实现步骤 捕捉会话——AVCaptureSession 捕捉输入——AVCaptureDeviceInput 捕捉预览——AVCaptureVideoPreviewLayer/OpenGL ES 捕捉连接——AVCaptureConnection 拍照——AVCaptureStillImageOutput 音频——AVCaptureAudioDataOutput 视频——AVC">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/1258499-8e2cdea415352eb6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+
+
+
+  <link rel="canonical" href="https://cdcyd.github.io/2016/08/30/自定义相机/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>AVFoundation自定义相机详解 | cyd’s blog</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">cyd’s blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+    <a href="/about/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-user"></i> <br />关于</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+  
+  
+  
+    
+      
+    
+    <a href="https://github.com/cdcyd" class="github-corner" target="_blank" title="Follow me on GitHub" aria-label="Follow me on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#222; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg>
+    
+      </a>
+    
+
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://cdcyd.github.io/2016/08/30/自定义相机/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="cyd">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/icon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="cyd’s blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">AVFoundation自定义相机详解
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2016-08-30 18:00:00" itemprop="dateCreated datePublished" datetime="2016-08-30T18:00:00+08:00">2016-08-30</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-10-30 14:53:55" itemprop="dateModified" datetime="2018-10-30T14:53:55+08:00">2018-10-30</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Objective-C/" itemprop="url" rel="index"><span itemprop="name">Objective-C</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">27k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">22 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><img src="http://upload-images.jianshu.io/upload_images/1258499-8e2cdea415352eb6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AVFoundation 中关于视频主要的类"></p>
+<ul>
+<li><p>目录</p>
+<ul>
+<li>相机基本实现步骤</li>
+<li>捕捉会话——AVCaptureSession</li>
+<li>捕捉输入——AVCaptureDeviceInput</li>
+<li>捕捉预览——AVCaptureVideoPreviewLayer/OpenGL ES</li>
+<li>捕捉连接——AVCaptureConnection</li>
+<li>拍照——AVCaptureStillImageOutput</li>
+<li>音频——AVCaptureAudioDataOutput</li>
+<li>视频——AVCaptureVideoDataOutput</li>
+<li>生成视频文件——AVAssetWriter、AVAssetWriterInput</li>
+<li>写入相册——ALAssetsLibrary、PHPhotoLibrary</li>
+<li>操作相机<ul>
+<li>转换摄像头</li>
+<li>补光</li>
+<li>闪光灯</li>
+<li>聚焦</li>
+<li>曝光</li>
+<li>自动聚焦曝光</li>
+<li>缩放</li>
+</ul>
+</li>
+<li>视频重力——Video gravity</li>
+<li>方向问题——Orientation</li>
+<li>项目地址</li>
+</ul>
+</li>
+<li><p>相机实现步骤，下面对每一会对每一步需要做的事情详解</p>
+<blockquote>
+<p>1.创建session(捕捉会话)<br>  2.创建device input(捕捉设备输入)<br>  3.预览view<br>  4.创建capture output(捕捉的输出)<br>  5.拍照、录视频(元数据转成图片或文件)</p>
+</blockquote>
+</li>
+<li><p>捕捉会话——AVCaptureSession<br>AVCaptureSession(捕捉会话管理)：它从物理设备得到数据流（比如摄像头和麦克风），输出到一个或多个目的地，它可以通过会话预设值(session preset)，来控制捕捉数据的格式和质量<br>下面是创建一个 session 的代码：</p>
+<figure class="highlight inform7"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">AVCaptureSession *captureSession = <span class="comment">[<span class="comment">[AVCaptureSession alloc]</span>init]</span>;</span><br><span class="line"><span class="comment">[captureSession setSessionPreset:AVCaptureSessionPresetPhoto]</span>;</span><br></pre></td></tr></table></figure>
+<p>SessionPreset在iOS中大概有11个</p>
+<blockquote>
+<p> NSString *const AVCaptureSessionPresetPhoto;</p>
+<pre><code>NSString *const AVCaptureSessionPresetHigh;
+NSString *const AVCaptureSessionPresetMedium;
+NSString *const AVCaptureSessionPresetLow;
+NSString *const AVCaptureSessionPreset352x288;
+NSString *const AVCaptureSessionPreset640x480;
+NSString *const AVCaptureSessionPreset1280x720;
+NSString *const AVCaptureSessionPreset1920x1080;
+</code></pre><p>  NSString *const AVCaptureSessionPresetiFrame960x540;</p>
+<pre><code>NSString *const AVCaptureSessionPresetiFrame1280x720;
+NSString *const AVCaptureSessionPresetInputPriority;
+</code></pre></blockquote>
+<p>第一个代表高像素图片输出；接下来三种为相对预设(low, medium, high)，这些预设的编码配置会因设备不同而不同，如果选择high，那么你选定的相机会提供给你该设备所能支持的最高画质；再后面就是特定分辨率的预设(352x288 VGA, 1920x1080 VGA, 1280x720 VGA, 640x480 VGA, 960x540 iFrame, 1280x720 iFrame)；最后一个代表 capture session 不去控制音频与视频输出设置，而是通过已连接的捕获设备的 activeFormat 来反过来控制 capture session 的输出质量等级</p>
+<p>注意：所有对 capture session 的调用都是阻塞的，因此建议将它们分配到后台串行队列中，不过这里为了简单，不考虑性能，所以省略了dispatch queue</p>
+</li>
+<li><p>捕捉输入——AVCaptureDeviceInput<br>AVCaptureDeviceInput(捕捉设备)：它实际上是为摄像头和麦克风等物理设备定义的接口，我们可以通过它来访问或控制这些硬件设备。比如控制摄像头的对焦、曝光等。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">/**</span></span><br><span class="line">  <span class="string">该方法会返回当前能够输入视频的全部设备，包括前后摄像头和外接设备</span></span><br><span class="line">  <span class="string">NSArray</span> <span class="meta">*videoDevices</span> <span class="string">=</span> <span class="string">[AVCaptureDevice</span> <span class="attr">devicesWithMediaType:AVMediaTypeVideo];</span></span><br><span class="line"></span><br><span class="line">  <span class="string">该方法会返回当前能够输入音频的全部设备</span></span><br><span class="line">  <span class="string">NSArray</span> <span class="meta">*videoDevices</span> <span class="string">=</span> <span class="string">[AVCaptureDevice</span> <span class="attr">devicesWithMediaType:AVMediaTypeAudio];</span></span><br><span class="line">  <span class="string">*/</span></span><br><span class="line"></span><br><span class="line"><span class="string">//</span> <span class="string">获取视频输入设备，该方法默认返回iPhone的后置摄像头</span></span><br><span class="line">    <span class="string">AVCaptureDevice</span> <span class="meta">*videoDevice</span> <span class="string">=</span> <span class="string">[AVCaptureDevice</span> <span class="attr">defaultDeviceWithMediaType:AVMediaTypeVideo];</span></span><br><span class="line"><span class="string">//</span> <span class="string">将捕捉设备加入到捕捉会话中</span></span><br><span class="line">    <span class="string">AVCaptureDeviceInput</span> <span class="meta">*videoInput</span> <span class="string">=</span> <span class="string">[AVCaptureDeviceInput</span> <span class="attr">deviceInputWithDevice:videoDevice</span> <span class="attr">error:error];</span></span><br><span class="line">    <span class="string">if</span> <span class="string">(videoInput)</span> <span class="string">&#123;</span></span><br><span class="line">        <span class="string">if</span> <span class="string">([_captureSession</span> <span class="attr">canAddInput:videoInput])&#123;</span></span><br><span class="line">            <span class="string">[_captureSession</span> <span class="attr">addInput:videoInput];</span></span><br><span class="line">        <span class="string">&#125;</span></span><br><span class="line">    <span class="string">&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="string">//</span> <span class="string">音频输入</span></span><br><span class="line">    <span class="string">AVCaptureDevice</span> <span class="meta">*audioDevice</span> <span class="string">=</span> <span class="string">[AVCaptureDevice</span> <span class="attr">defaultDeviceWithMediaType:AVMediaTypeAudio];</span></span><br><span class="line">    <span class="string">AVCaptureDeviceInput</span> <span class="meta">*audioIn</span> <span class="string">=</span> <span class="string">[[AVCaptureDeviceInput</span> <span class="string">alloc]</span> <span class="attr">initWithDevice:audioDevice</span> <span class="attr">error:error];</span></span><br><span class="line">    <span class="string">if</span> <span class="string">([_captureSession</span> <span class="attr">canAddInput:audioIn])&#123;</span></span><br><span class="line">        <span class="string">[_captureSession</span> <span class="attr">addInput:audioIn];</span></span><br><span class="line">    <span class="string">&#125;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>捕捉预览——AVCaptureVideoPreviewLayer/OpenGL ES<br>AVCaptureVideoPreviewLayer(捕捉预览)：它是CALayer的子类，可被用于自动显示相机产生的实时图像。previewLayer支持视频重力概念，可以控制视频内容渲染的缩放和拉效果(关于视频重力，将在后面进行详解)</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建一个previewLayer</span></span><br><span class="line"><span class="built_in">AVCaptureVideoPreviewLayer</span>  *previewLayer = [[<span class="built_in">AVCaptureVideoPreviewLayer</span> alloc] initpWithFrame:<span class="keyword">self</span>.view.bounds]</span><br><span class="line">[previewLayer.layer setVideoGravity:<span class="built_in">AVLayerVideoGravityResizeAspect</span>];</span><br><span class="line">[previewLayer.layer setSession:session];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将屏幕坐标系的点转换为previewLayer坐标系的点</span></span><br><span class="line">- (<span class="built_in">CGPoint</span>)captureDevicePointForPoint:(<span class="built_in">CGPoint</span>)point &#123;                      </span><br><span class="line">    <span class="keyword">return</span> [previewLayer.layer captureDevicePointOfInterestForPoint:point];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意： </p>
+<ol>
+<li>它看起来有点像输出，但其实不是，它仅用来预览摄像头捕捉的画面。真正用于输出的是AVCaptureSession（previewLayer拥有session，session拥有outputs)；</li>
+<li>它的坐标系和屏幕的坐标系不同，如果点击某区域实现对焦时，我们需要将设备的坐标系转换为实时预览图的坐标；</li>
+<li>它的坐标原点永远都在右上角，这和我们手机的坐标系不同，手机坐标系的原点是不变的。因此拍照或录制视频时，要先得到设备方向(关于方向问题，后面会详解)，计算输出的旋转角度。</li>
+</ol>
+</blockquote>
+<p> 捕捉预览除了用AVCaptureVideoPreviewLayer外，还可以用OpenGL ES绘制，我们可以从输出数据流捕捉单一的图像帧，并使用 OpenGL ES手动地把它们显示在 view 上。如果我们想对预览视图进行操作，如使用滤镜，我们就必须这样做。这里不做深入研究，下面给出一段简单的实现代码：</p>
+ <figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">  <span class="comment">// 创建glview</span></span><br><span class="line">  EAGLContext *context = [[EAGLContext alloc]<span class="string">initWithAPI:</span>kEAGLRenderingAPIOpenGLES2];</span><br><span class="line">  GLKView *glView = [[GLKView alloc]<span class="string">initWithFrame:</span>self.view.bounds <span class="string">context:</span>context];</span><br><span class="line">  [EAGLContext <span class="string">setCurrentContext:</span>context];</span><br><span class="line">  [self.view <span class="string">addSubview:</span>glView];</span><br><span class="line">  glView.transform = CGAffineTransformMakeRotation(M_PI_2);</span><br><span class="line">  glView.frame = [UIApplication sharedApplication].keyWindow.bounds;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 在视频输出函数中绘制出来</span></span><br><span class="line">-(<span class="keyword">void</span>)<span class="string">captureOutput:</span>(AVCaptureOutput *)captureOutput <span class="string">didOutputSampleBuffer:</span>(CMSampleBufferRef)sampleBuffer <span class="string">fromConnection:</span>(AVCaptureConnection *)connection&#123;</span><br><span class="line">    <span class="keyword">if</span> (_glview.context != [EAGLContext currentContext]) &#123;</span><br><span class="line">        [EAGLContext <span class="string">setCurrentContext:</span>_glview.context];</span><br><span class="line">    &#125;</span><br><span class="line">    CVImageBufferRef imageRef = CMSampleBufferGetImageBuffer(sampleBuffer);</span><br><span class="line">    CIImage *image = [CIImage <span class="string">imageWithCVImageBuffer:</span>imageRef];</span><br><span class="line">    [_glview bindDrawable];</span><br><span class="line">    [_cicontext <span class="string">drawImage:</span>image <span class="string">inRect:</span>image.extent <span class="string">fromRect:</span>image.extent];</span><br><span class="line">    [_glview display];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>捕捉连接——AVCaptureConnection<br>  捕捉连接负责将捕捉会话接收的媒体类型和输出连接起来，比如AVCaptureAudioDataOutput可以接受音频数据，AVCaptureVideoDataOutput可以接受视频数据。会话通过捕捉连接，确定哪些输入视频，那些输入音频。通过对捕捉连接的访问，可以对信号流进行底层控制，比如禁用某些特定的连接。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 设置视频捕捉连接</span></span><br><span class="line">_videoConnection = [videoOutput connectionWithMediaType:<span class="built_in">AVMediaTypeVideo</span>];</span><br><span class="line"><span class="comment">// 在视频元数据的输出函数中，如果捕捉连接是视频连接，则写入视频数据</span></span><br><span class="line"><span class="keyword">if</span> (connection == _videoConnection)&#123;</span><br><span class="line">    <span class="keyword">if</span> ([<span class="keyword">self</span> inputsReadyToRecord])&#123;</span><br><span class="line">        [<span class="keyword">self</span> writeSampleBuffer:sampleBuffer ofType:<span class="built_in">AVMediaTypeVideo</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 设置音频捕捉连接</span></span><br><span class="line">_audioConnection = [audioOut connectionWithMediaType:<span class="built_in">AVMediaTypeAudio</span>];</span><br><span class="line"><span class="comment">// 在视频元数据的输出函数中，如果捕捉连接是音频连接，则写入音频数据</span></span><br><span class="line"><span class="keyword">if</span> (connection == _audioConnection)&#123;</span><br><span class="line">    <span class="keyword">if</span> (_readyToRecordVideo &amp;&amp; _readyToRecordAudio)&#123;</span><br><span class="line">        [<span class="keyword">self</span> writeSampleBuffer:sampleBuffer ofType:<span class="built_in">AVMediaTypeAudio</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>拍照——AVCaptureStillImageOutput<br>AVCaptureStillImageOutput会为我们捕捉高分辨率的图像，起设置如下：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建image output 代码</span></span><br><span class="line"><span class="built_in">AVCaptureStillImageOutput</span> *imageOutput = [[<span class="built_in">AVCaptureStillImageOutput</span> alloc] init];            </span><br><span class="line">    imageOutput.outputSettings = @&#123;<span class="built_in">AVVideoCodecKey</span>:<span class="built_in">AVVideoCodecJPEG</span>&#125;;</span><br><span class="line">    <span class="keyword">if</span> ([_captureSession canAddOutput:imageOutput]) &#123;</span><br><span class="line">        [_captureSession addOutput:imageOutput];</span><br><span class="line">        _imageOutput = imageOutput;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 输出图片</span></span><br><span class="line"><span class="built_in">AVCaptureConnection</span> *connection = [_imageOutput connectionWithMediaType:<span class="built_in">AVMediaTypeVideo</span>];</span><br><span class="line">    <span class="keyword">if</span> (connection.isVideoOrientationSupported) &#123;</span><br><span class="line">        connection.videoOrientation = [<span class="keyword">self</span> currentVideoOrientation];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">id</span> takePictureSuccess = ^(<span class="built_in">CMSampleBufferRef</span> sampleBuffer,<span class="built_in">NSError</span> *error)&#123;</span><br><span class="line">        <span class="keyword">if</span> (sampleBuffer == <span class="literal">NULL</span>) &#123;</span><br><span class="line">            [<span class="keyword">self</span> showError:error];</span><br><span class="line">            <span class="keyword">return</span> ;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">NSData</span> *imageData = [<span class="built_in">AVCaptureStillImageOutput</span> jpegStillImageNSDataRepresentation:sampleBuffer];</span><br><span class="line">        <span class="built_in">UIImage</span> *image = [[<span class="built_in">UIImage</span> alloc]initWithData:imageData];</span><br><span class="line">    &#125;;</span><br><span class="line">    [_imageOutput captureStillImageAsynchronouslyFromConnection:connection completionHandler:takePictureSuccess];</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>音频——AVCaptureAudioDataOutput<br>AVCaptureAudioDataOutput(音频数据输出)：它输出硬件实时捕捉的音频数字样本，还有一个音频输出类是AVCaptureAudioFileOutput，不过它只能在录制完成后输出完整的音频文件。</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 音频输出</span></span><br><span class="line">    AVCaptureAudioDataOutput *audioOut = [[AVCaptureAudioDataOutput alloc] init];</span><br><span class="line">    [audioOut <span class="string">setSampleBufferDelegate:</span>self <span class="string">queue:</span>captureQueue];</span><br><span class="line">    <span class="keyword">if</span> ([_captureSession <span class="string">canAddOutput:</span>audioOut])&#123;</span><br><span class="line">        [_captureSession <span class="string">addOutput:</span>audioOut];</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>视频——AVCaptureVideoDataOutput<br>AVCaptureVideoDataOutput(视频数据输出)：它输出硬件实时捕捉的视频数字样本，还有一个音频和视频输出类是AVCaptureMovieFileOutput，不过它只能在录制完成后输出完整的视频和音频文件。</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 视频输出</span></span><br><span class="line">    AVCaptureVideoDataOutput *videoOut = [[AVCaptureVideoDataOutput alloc] init];</span><br><span class="line">    [videoOut <span class="string">setAlwaysDiscardsLateVideoFrames:</span>YES];</span><br><span class="line">    [videoOut <span class="string">setVideoSettings:</span>@&#123;(id)<span class="string">kCVPixelBufferPixelFormatTypeKey :</span> [NSNumber <span class="string">numberWithInt:</span>kCVPixelFormatType_32BGRA]&#125;];</span><br><span class="line">    [videoOut <span class="string">setSampleBufferDelegate:</span>self <span class="string">queue:</span>captureQueue];</span><br><span class="line">    <span class="keyword">if</span> ([_captureSession <span class="string">canAddOutput:</span>videoOut])&#123;</span><br><span class="line">        [_captureSession <span class="string">addOutput:</span>videoOut];</span><br><span class="line">        _videoOutput = videoOut;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>生成视频文件——AVAssetWriter、AVAssetWriterInput<br>AVAssetWriter：用于对媒体资源进行编码并讲其写入到容器文件中，比如一个QuickTime文件。<br>AVAssetWriterInput：用于处理指定的媒体类型，比如音频和视频。<br>AVAssetWriterInputPixelBufferAdaptor:这个类在生成视频文件时提供最优性能，不过Demo没有使用该类，有兴趣的可以去研究一下</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 初始化一个assetWriter</span></span><br><span class="line"><span class="built_in">NSError</span> *error;</span><br><span class="line">  _assetWriter = [[<span class="built_in">AVAssetWriter</span> alloc] initWithURL:_movieURL fileType:<span class="built_in">AVFileTypeQuickTimeMovie</span> error:&amp;error];</span><br><span class="line">  <span class="keyword">if</span> (error)&#123;</span><br><span class="line">     [<span class="keyword">self</span> showError:error];</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 配置视频源数据输入</span></span><br><span class="line">- (<span class="built_in">BOOL</span>)setupAssetWriterVideoInput:(<span class="built_in">CMFormatDescriptionRef</span>)currentFormatDescription</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">CGFloat</span> bitsPerPixel;</span><br><span class="line">    <span class="built_in">CMVideoDimensions</span> dimensions = <span class="built_in">CMVideoFormatDescriptionGetDimensions</span>(currentFormatDescription);</span><br><span class="line">    <span class="built_in">NSUInteger</span> numPixels = dimensions.width * dimensions.height;</span><br><span class="line">    <span class="built_in">NSUInteger</span> bitsPerSecond;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (numPixels &lt; (<span class="number">640</span> * <span class="number">480</span>))&#123;</span><br><span class="line">        bitsPerPixel = <span class="number">4.05</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span>&#123;</span><br><span class="line">        bitsPerPixel = <span class="number">11.4</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    bitsPerSecond = numPixels * bitsPerPixel;</span><br><span class="line">    <span class="built_in">NSDictionary</span> *videoCompressionSettings = @&#123;<span class="built_in">AVVideoCodecKey</span>  : <span class="built_in">AVVideoCodecH264</span>,</span><br><span class="line">                                               <span class="built_in">AVVideoWidthKey</span>  : [<span class="built_in">NSNumber</span> numberWithInteger:dimensions.width],</span><br><span class="line">                                               <span class="built_in">AVVideoHeightKey</span> : [<span class="built_in">NSNumber</span> numberWithInteger:dimensions.height],</span><br><span class="line">                                               <span class="built_in">AVVideoCompressionPropertiesKey</span>:@&#123;<span class="built_in">AVVideoAverageBitRateKey</span>:[<span class="built_in">NSNumber</span> numberWithInteger:bitsPerSecond],</span><br><span class="line">                                                                                 <span class="built_in">AVVideoMaxKeyFrameIntervalKey</span>:[<span class="built_in">NSNumber</span> numberWithInteger:<span class="number">30</span>]&#125;</span><br><span class="line">                                               &#125;;</span><br><span class="line">    <span class="keyword">if</span> ([_assetWriter canApplyOutputSettings:videoCompressionSettings forMediaType:<span class="built_in">AVMediaTypeVideo</span>])</span><br><span class="line">    &#123;</span><br><span class="line">        _assetVideoInput = [<span class="built_in">AVAssetWriterInput</span> assetWriterInputWithMediaType:<span class="built_in">AVMediaTypeVideo</span> outputSettings:videoCompressionSettings];</span><br><span class="line">        _assetVideoInput.expectsMediaDataInRealTime = <span class="literal">YES</span>;</span><br><span class="line">        _assetVideoInput.transform = [<span class="keyword">self</span> transformFromCurrentVideoOrientationToOrientation:<span class="keyword">self</span>.referenceOrientation];</span><br><span class="line">        <span class="keyword">if</span> ([_assetWriter canAddInput:_assetVideoInput])&#123;</span><br><span class="line">            [_assetWriter addInput:_assetVideoInput];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span>&#123;</span><br><span class="line">            [<span class="keyword">self</span> showError:_assetWriter.error];</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span>&#123;</span><br><span class="line">        [<span class="keyword">self</span> showError:_assetWriter.error];</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 配置音频源数据输入</span></span><br><span class="line">- (<span class="built_in">BOOL</span>)setupAssetWriterAudioInput:(<span class="built_in">CMFormatDescriptionRef</span>)currentFormatDescription</span><br><span class="line">&#123;</span><br><span class="line">    size_t aclSize = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">const</span> AudioStreamBasicDescription *currentASBD = <span class="built_in">CMAudioFormatDescriptionGetStreamBasicDescription</span>(currentFormatDescription);</span><br><span class="line">    <span class="keyword">const</span> AudioChannelLayout *currentChannelLayout = <span class="built_in">CMAudioFormatDescriptionGetChannelLayout</span>(currentFormatDescription, &amp;aclSize);</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">NSData</span> *currentChannelLayoutData = <span class="literal">nil</span>;</span><br><span class="line">    <span class="keyword">if</span> (currentChannelLayout &amp;&amp; aclSize &gt; <span class="number">0</span> )&#123;</span><br><span class="line">        currentChannelLayoutData = [<span class="built_in">NSData</span> dataWithBytes:currentChannelLayout length:aclSize];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span>&#123;</span><br><span class="line">        currentChannelLayoutData = [<span class="built_in">NSData</span> data];</span><br><span class="line">    &#125;</span><br><span class="line">        </span><br><span class="line">    <span class="built_in">NSDictionary</span> *audioCompressionSettings = @&#123;<span class="built_in">AVFormatIDKey</span> : [<span class="built_in">NSNumber</span> numberWithInteger:kAudioFormatMPEG4AAC],</span><br><span class="line">                                               <span class="built_in">AVSampleRateKey</span> : [<span class="built_in">NSNumber</span> numberWithFloat:currentASBD-&gt;mSampleRate],</span><br><span class="line">                                               <span class="built_in">AVEncoderBitRatePerChannelKey</span> : [<span class="built_in">NSNumber</span> numberWithInt:<span class="number">64000</span>],</span><br><span class="line">                                               <span class="built_in">AVNumberOfChannelsKey</span> : [<span class="built_in">NSNumber</span> numberWithInteger:currentASBD-&gt;mChannelsPerFrame],</span><br><span class="line">                                               <span class="built_in">AVChannelLayoutKey</span> : currentChannelLayoutData&#125;;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> ([_assetWriter canApplyOutputSettings:audioCompressionSettings forMediaType:<span class="built_in">AVMediaTypeAudio</span>])</span><br><span class="line">    &#123;</span><br><span class="line">        _assetAudioInput = [<span class="built_in">AVAssetWriterInput</span> assetWriterInputWithMediaType:<span class="built_in">AVMediaTypeAudio</span> outputSettings:audioCompressionSettings];</span><br><span class="line">        _assetAudioInput.expectsMediaDataInRealTime = <span class="literal">YES</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> ([_assetWriter canAddInput:_assetAudioInput])&#123;</span><br><span class="line">            [_assetWriter addInput:_assetAudioInput];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span>&#123;</span><br><span class="line">            [<span class="keyword">self</span> showError:_assetWriter.error];</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span>&#123;</span><br><span class="line">        [<span class="keyword">self</span> showError:_assetWriter.error];</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过上面的代码，我们就准备好了一个AVAssetWriter了，就可以用它来生产视频文件，我们可以在视频源数据输出函数中写入元数据</p>
+ <figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"> - (<span class="keyword">void</span>)captureOutput:(<span class="built_in">AVCaptureOutput</span> *)captureOutput didOutputSampleBuffer:(<span class="built_in">CMSampleBufferRef</span>)sampleBuffer fromConnection:(<span class="built_in">AVCaptureConnection</span> *)connection&#123;</span><br><span class="line"><span class="keyword">if</span> (_recording) &#123;</span><br><span class="line">      <span class="built_in">CFRetain</span>(sampleBuffer);</span><br><span class="line">      <span class="built_in">dispatch_async</span>(_movieWritingQueue, ^&#123;</span><br><span class="line">          <span class="keyword">if</span> (_assetWriter)</span><br><span class="line">          &#123;</span><br><span class="line">              <span class="keyword">if</span> (connection == _videoConnection)</span><br><span class="line">              &#123;</span><br><span class="line">                  <span class="keyword">if</span> (!_readyToRecordVideo)&#123;</span><br><span class="line">                      _readyToRecordVideo = [<span class="keyword">self</span> setupAssetWriterVideoInput:<span class="built_in">CMSampleBufferGetFormatDescription</span>(sampleBuffer)];</span><br><span class="line">                  &#125;</span><br><span class="line">                  <span class="keyword">if</span> ([<span class="keyword">self</span> inputsReadyToRecord])&#123;</span><br><span class="line">                      [<span class="keyword">self</span> writeSampleBuffer:sampleBuffer ofType:<span class="built_in">AVMediaTypeVideo</span>];</span><br><span class="line">                  &#125;</span><br><span class="line">              &#125;</span><br><span class="line">              <span class="keyword">else</span> <span class="keyword">if</span> (connection == _audioConnection)&#123;</span><br><span class="line">                  <span class="keyword">if</span> (!_readyToRecordAudio)&#123;</span><br><span class="line">                      _readyToRecordAudio = [<span class="keyword">self</span> setupAssetWriterAudioInput:<span class="built_in">CMSampleBufferGetFormatDescription</span>(sampleBuffer)];</span><br><span class="line">                  &#125;</span><br><span class="line">                  <span class="keyword">if</span> ([<span class="keyword">self</span> inputsReadyToRecord])&#123;</span><br><span class="line">                      [<span class="keyword">self</span> writeSampleBuffer:sampleBuffer ofType:<span class="built_in">AVMediaTypeAudio</span>];</span><br><span class="line">                  &#125;</span><br><span class="line">              &#125;</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="built_in">CFRelease</span>(sampleBuffer);</span><br><span class="line">      &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>写入相册——ALAssetsLibrary、PHPhotoLibrary<br>iOS9.0以前：</p>
+<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ALAssetsLibrary *<span class="keyword">lab</span> = [[ALAssetsLibrary alloc]init];</span><br><span class="line">    <span class="comment">// 保存视频</span></span><br><span class="line">    [<span class="keyword">lab</span> writeVideoAtPathToSavedPhotosAlbum:_movieURL completionBlock:^(NSURL *assetURL, NSError *<span class="keyword">error</span>) &#123;</span><br><span class="line">         <span class="keyword">if</span> (<span class="keyword">error</span>) &#123;</span><br><span class="line">             [self showError:<span class="keyword">error</span>];</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;];</span><br></pre></td></tr></table></figure>
+<p>iOS9.0以后</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[PHPhotoLibrary requestAuthorization:^( PHAuthorizationStatus status ) &#123;</span><br><span class="line">       if (<span class="name">status</span> == PHAuthorizationStatusAuthorized) &#123;</span><br><span class="line">           [[PHPhotoLibrary sharedPhotoLibrary] performChanges:<span class="comment">^&#123;</span></span><br><span class="line"><span class="comment">               // 保存视频</span></span><br><span class="line"><span class="comment">               PHAssetCreationRequest *videoRequest = [PHAssetCreationRequest creationRequestForAsset];</span></span><br><span class="line"><span class="comment">               [videoRequest addResourceWithType:PHAssetResourceTypeVideo fileURL:_movieURL options:nil];           </span></span><br><span class="line"><span class="comment">            &#125;</span> completionHandler:^( BOOL success, NSError * _Nullable error ) &#123;</span><br><span class="line">               if (<span class="name">!success</span>) &#123;</span><br><span class="line">                   [self showError:error]<span class="comment">;</span></span><br><span class="line">               &#125;</span><br><span class="line">           &#125;]<span class="comment">;</span></span><br><span class="line">       &#125;</span><br><span class="line"> &#125;]<span class="comment">;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>操作相机</p>
+<p>相机的操作都是一些固定的代码，我就不多讲了，我们只需要注意以下几点：<br>1.闪光灯和手电筒不能同时开启<br>2.在前置摄像头时不能开启手电筒，所以在转换时，会被强制关闭<br>3.在转换摄像头完成后，需要重新设置视频输出链接<br>4.前后摄像头需要分别设置闪光灯的开关，所以我们必须记录当前闪光灯的设置状态，在转换完成之后，还需要重新设置一次</p>
+<ul>
+<li>转换摄像头</li>
+</ul>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">BOOL</span>)switchCameras&#123;</span><br><span class="line">    <span class="built_in">NSError</span> *error;</span><br><span class="line">  <span class="built_in">AVCaptureDevice</span> *videoDevice = [<span class="keyword">self</span> inactiveCamera];</span><br><span class="line">  <span class="built_in">AVCaptureDeviceInput</span> *videoInput = [<span class="built_in">AVCaptureDeviceInput</span> deviceInputWithDevice:videoDevice error:&amp;error];</span><br><span class="line">  <span class="keyword">if</span> (videoInput) &#123;</span><br><span class="line">      <span class="built_in">AVCaptureFlashMode</span> flashMode = [<span class="keyword">self</span> flashMode];</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 转换摄像头</span></span><br><span class="line">      [_session beginConfiguration];</span><br><span class="line">      [_session removeInput:_deviceInput];</span><br><span class="line">      <span class="keyword">if</span> ([_session canAddInput:videoInput]) &#123;</span><br><span class="line">          <span class="built_in">CATransition</span> *animation = [<span class="built_in">CATransition</span> animation];</span><br><span class="line">          animation.type = <span class="string">@"oglFlip"</span>;</span><br><span class="line">          animation.subtype = kCATransitionFromLeft;</span><br><span class="line">          animation.duration = <span class="number">0.5</span>;</span><br><span class="line">          [<span class="keyword">self</span>.cameraView.previewView.layer addAnimation:animation forKey:<span class="string">@"flip"</span>];</span><br><span class="line">          [_session addInput:videoInput];</span><br><span class="line">          _deviceInput = videoInput;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          [_session addInput:_deviceInput];</span><br><span class="line">      &#125;</span><br><span class="line">      [_session commitConfiguration];</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 完成后需要重新设置视频输出链接</span></span><br><span class="line">      _videoConnection = [_videoOutput connectionWithMediaType:<span class="built_in">AVMediaTypeVideo</span>];</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 如果后置转前置，系统会自动关闭手电筒，如果之前打开的，需要更新UI</span></span><br><span class="line">      <span class="keyword">if</span> (videoDevice.position == <span class="built_in">AVCaptureDevicePositionFront</span>) &#123;</span><br><span class="line">          [<span class="keyword">self</span>.cameraView changeTorch:<span class="literal">NO</span>];</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 前后摄像头的闪光灯不是同步的，所以在转换摄像头后需要重新设置闪光灯</span></span><br><span class="line">      [<span class="keyword">self</span> changeFlash:flashMode];</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> error;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>补光</li>
+</ul>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">    AVCaptureDevice <span class="number">*de</span>vice = [self activeCamera];</span><br><span class="line">    <span class="keyword">if</span> (device.torchMode != torchMode &amp;&amp; [device isTorchModeSupported:torchMode]) &#123;</span><br><span class="line">        NSError <span class="number">*e</span>rror;</span><br><span class="line">        <span class="keyword">if</span> ([device lockForConfiguration:&amp;<span class="builtin-name">error</span>]) &#123;</span><br><span class="line">            device.torchMode = torchMode;</span><br><span class="line">            [device unlockForConfiguration];</span><br><span class="line">        &#125; </span><br><span class="line">        <span class="keyword">else</span>&#123;</span><br><span class="line">            [self showError:<span class="builtin-name">error</span>];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>闪光灯</li>
+</ul>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">    AVCaptureDevice <span class="number">*de</span>vice = [self activeCamera];</span><br><span class="line">    <span class="keyword">if</span> (device.flashMode != flashMode &amp;&amp; [device isFlashModeSupported:flashMode]) &#123;</span><br><span class="line">        NSError <span class="number">*e</span>rror;</span><br><span class="line">        <span class="keyword">if</span> ([device lockForConfiguration:&amp;<span class="builtin-name">error</span>]) &#123;</span><br><span class="line">            device.flashMode = flashMode;</span><br><span class="line">            [device unlockForConfiguration];</span><br><span class="line">        &#125; </span><br><span class="line">        <span class="keyword">else</span>&#123;</span><br><span class="line">            [self showError:<span class="builtin-name">error</span>];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>聚焦</li>
+</ul>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)focusAtPoint:(<span class="built_in">CGPoint</span>)point &#123;                                       </span><br><span class="line">    <span class="built_in">AVCaptureDevice</span> *device = [<span class="keyword">self</span> activeCamera];</span><br><span class="line">    <span class="keyword">if</span> ([<span class="keyword">self</span> cameraSupportsTapToFocus] &amp;&amp; [device isFocusModeSupported:<span class="built_in">AVCaptureFocusModeAutoFocus</span>]) &#123;</span><br><span class="line">        <span class="built_in">NSError</span> *error;</span><br><span class="line">        <span class="keyword">if</span> ([device lockForConfiguration:&amp;error]) &#123;                         </span><br><span class="line">            device.focusPointOfInterest = point;</span><br><span class="line">            device.focusMode = <span class="built_in">AVCaptureFocusModeAutoFocus</span>;</span><br><span class="line">            [device unlockForConfiguration];</span><br><span class="line">        &#125; </span><br><span class="line">        <span class="keyword">else</span>&#123;</span><br><span class="line">            [<span class="keyword">self</span> showError:error];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>曝光</li>
+</ul>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="built_in">NSString</span> *CameraAdjustingExposureContext;</span><br><span class="line">- (<span class="keyword">void</span>)exposeAtPoint:(<span class="built_in">CGPoint</span>)point&#123;</span><br><span class="line">    <span class="built_in">AVCaptureDevice</span> *device = [<span class="keyword">self</span> activeCamera];</span><br><span class="line">    <span class="keyword">if</span> ([<span class="keyword">self</span> cameraSupportsTapToExpose] &amp;&amp; [device isExposureModeSupported:<span class="built_in">AVCaptureExposureModeContinuousAutoExposure</span>]) &#123;</span><br><span class="line">        <span class="built_in">NSError</span> *error;</span><br><span class="line">        <span class="keyword">if</span> ([device lockForConfiguration:&amp;error]) &#123;                         </span><br><span class="line">            device.exposurePointOfInterest = point;</span><br><span class="line">            device.exposureMode = <span class="built_in">AVCaptureExposureModeContinuousAutoExposure</span>;</span><br><span class="line">            <span class="keyword">if</span> ([device isExposureModeSupported:<span class="built_in">AVCaptureExposureModeLocked</span>]) &#123;</span><br><span class="line">                [device addObserver:<span class="keyword">self</span>                                    </span><br><span class="line">                         forKeyPath:<span class="string">@"adjustingExposure"</span></span><br><span class="line">                            options:<span class="built_in">NSKeyValueObservingOptionNew</span></span><br><span class="line">                            context:&amp;CameraAdjustingExposureContext];</span><br><span class="line">            &#125;</span><br><span class="line">            [device unlockForConfiguration];</span><br><span class="line">        &#125; </span><br><span class="line">        <span class="keyword">else</span>&#123;</span><br><span class="line">            [<span class="keyword">self</span> showError:error];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)observeValueForKeyPath:(<span class="built_in">NSString</span> *)keyPath ofObject:(<span class="keyword">id</span>)object change:(<span class="built_in">NSDictionary</span> *)change context:(<span class="keyword">void</span> *)context &#123;</span><br><span class="line">    <span class="keyword">if</span> (context == &amp;CameraAdjustingExposureContext) &#123;                     </span><br><span class="line">        <span class="built_in">AVCaptureDevice</span> *device = (<span class="built_in">AVCaptureDevice</span> *)object;</span><br><span class="line">        <span class="keyword">if</span> (!device.isAdjustingExposure &amp;&amp; [device isExposureModeSupported:<span class="built_in">AVCaptureExposureModeLocked</span>]) &#123;</span><br><span class="line">            [object removeObserver:<span class="keyword">self</span>                                     </span><br><span class="line">                        forKeyPath:<span class="string">@"adjustingExposure"</span></span><br><span class="line">                           context:&amp;CameraAdjustingExposureContext];</span><br><span class="line">            <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;                    </span><br><span class="line">                <span class="built_in">NSError</span> *error;</span><br><span class="line">                <span class="keyword">if</span> ([device lockForConfiguration:&amp;error]) &#123;</span><br><span class="line">                    device.exposureMode = <span class="built_in">AVCaptureExposureModeLocked</span>;</span><br><span class="line">                    [device unlockForConfiguration];</span><br><span class="line">                &#125; </span><br><span class="line">                <span class="keyword">else</span>&#123;</span><br><span class="line">                    [<span class="keyword">self</span> showError:error];</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">else</span>&#123;</span><br><span class="line">        [<span class="keyword">super</span> observeValueForKeyPath:keyPath</span><br><span class="line">                             ofObject:object</span><br><span class="line">                               change:change</span><br><span class="line">                              context:context];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>自动聚焦/曝光</li>
+</ul>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">BOOL</span>)resetFocusAndExposureModes&#123;</span><br><span class="line">    <span class="built_in">AVCaptureDevice</span> *device = [<span class="keyword">self</span> activeCamera];</span><br><span class="line">    <span class="built_in">AVCaptureExposureMode</span> exposureMode = <span class="built_in">AVCaptureExposureModeContinuousAutoExposure</span>;</span><br><span class="line">    <span class="built_in">AVCaptureFocusMode</span> focusMode = <span class="built_in">AVCaptureFocusModeContinuousAutoFocus</span>;</span><br><span class="line">    <span class="built_in">BOOL</span> canResetFocus = [device isFocusPointOfInterestSupported] &amp;&amp; [device isFocusModeSupported:focusMode];</span><br><span class="line">    <span class="built_in">BOOL</span> canResetExposure = [device isExposurePointOfInterestSupported] &amp;&amp; [device isExposureModeSupported:exposureMode];</span><br><span class="line">    <span class="built_in">CGPoint</span> centerPoint = <span class="built_in">CGPointMake</span>(<span class="number">0.5</span>f, <span class="number">0.5</span>f);                          </span><br><span class="line">    <span class="built_in">NSError</span> *error;</span><br><span class="line">    <span class="keyword">if</span> ([device lockForConfiguration:&amp;error]) &#123;</span><br><span class="line">        <span class="keyword">if</span> (canResetFocus) &#123;                                                </span><br><span class="line">            device.focusMode = focusMode;</span><br><span class="line">            device.focusPointOfInterest = centerPoint;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (canResetExposure) &#123;                                             </span><br><span class="line">            device.exposureMode = exposureMode;</span><br><span class="line">            device.exposurePointOfInterest = centerPoint;</span><br><span class="line">        &#125;</span><br><span class="line">        [device unlockForConfiguration];</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">else</span>&#123;</span><br><span class="line">        [<span class="keyword">self</span> showError:error];</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>缩放(factor：缩放因子，这里我们需要使他成指数型增长，rate：缩放速率)<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">- (id)zoom:(AVCaptureDevice *)device <span class="keyword">factor</span>:(CGFloat)<span class="keyword">factor</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (device.activeFormat.videoMaxZoomFactor &gt; <span class="keyword">factor</span> &amp;&amp; <span class="keyword">factor</span> &gt;= 1.0) &#123;</span><br><span class="line">      NSError *<span class="keyword">error</span>;</span><br><span class="line">      <span class="keyword">if</span> ([device lockForConfiguration:&amp;<span class="keyword">error</span>]) &#123;</span><br><span class="line">          [device rampToVideoZoomFactor:<span class="keyword">factor</span> withRate:4.0];</span><br><span class="line">          [device unlockForConfiguration];</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">error</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> [self <span class="keyword">error</span>:@<span class="string">"不支持的缩放倍数"</span> code:200];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<ul>
+<li><p>视频重力——Video gravity</p>
+<p>视频重力：控制视频内容渲染的缩放和拉伸效果。<br>举个例子，在我们设置会话时有一个参数session preset，它是用来控制捕捉数据格式和质量了。我的测试机是6s，当我选择参数AVCaptureSessionPresetPhoto时，输出图片大小如下：</p>
+<figure class="highlight accesslog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Printing description of image:</span><br><span class="line">&lt;CIImage: 0x12c7bdad0 extent <span class="string">[0 0 750 1000]</span>&gt;</span><br><span class="line">   affine <span class="string">[1 0 0 -1 0 1000]</span> extent=<span class="string">[0 0 750 1000]</span></span><br><span class="line">   colormatch <span class="string">"QuickTime 'nclc' Video (1,1,6)"</span>-to-workingspace extent=<span class="string">[0 0 750 1000]</span></span><br><span class="line">   IOSurface 0x12da00008 BGRA8 extent=<span class="string">[0 0 750 1000]</span></span><br></pre></td></tr></table></figure>
+<p>当我选择参数AVCaptureSessionPresetHigh时，输出图片大小如下：</p>
+<figure class="highlight dns"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Printing description of image:</span><br><span class="line">&lt;CIImage: <span class="number">0</span>x<span class="number">15f851680</span> extent [<span class="number">0 0 1080</span> <span class="number">1920</span>]&gt;</span><br><span class="line">    affine [<span class="number">1</span> <span class="number">0</span> <span class="number">0</span> -<span class="number">1 0 1920</span>] extent=[<span class="number">0 0 1080</span> <span class="number">1920</span>]</span><br><span class="line">    colormatch "QuickTime 'nclc' Video (<span class="number">1</span>,<span class="number">1</span>,<span class="number">6</span>)"-to-workingspace extent=[<span class="number">0 0 1080</span> <span class="number">1920</span>]</span><br><span class="line">    IOSurface <span class="number">0</span>x<span class="number">15f900008</span> BGRA8 extent=[<span class="number">0 0 1080</span> <span class="number">1920</span>]</span><br></pre></td></tr></table></figure>
+<p>可以看出选择不同的session preset，会输出不同大小的图片，但是这些图片都是很大的，这么大的图片要显示在手机预览层，必须要缩放，而视频重力其实就是缩放参数。<br>AVLayerVideoGravityResizeAspect：在预览层区域内缩放视频，保持视频原始宽高比。这是默认值，同时适用大多数情况。使用该参数预览时，有可能不能铺满整个预览视图<br>AVLayerVideoGravityResizeAspectFill：按照视频的宽高比将视频拉伸填满整个图层。使用该参数时，很可能造成视频预览图片被裁剪，而拍摄输出没有被裁剪，这样就会使预览图和最终拍摄的图不一致。<br>AVLayerVideoGravityResize：拉伸视频内容以匹配预览层大小，这个是最不常用的，可能造成视频扭曲。</p>
+</li>
+<li><p>方向问题——Orientation</p>
+<p>设备方向device orientation</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 设备方向</span></span><br><span class="line">    <span class="built_in">UIDevice</span> *device = [<span class="built_in">UIDevice</span> currentDevice] ;   </span><br><span class="line">    <span class="keyword">switch</span> (device.orientation) &#123;  </span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">UIDeviceOrientationFaceUp</span>:  </span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"屏幕朝上平躺"</span>);  </span><br><span class="line">            <span class="keyword">break</span>;  </span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">UIDeviceOrientationFaceDown</span>:  </span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"屏幕朝下平躺"</span>);  </span><br><span class="line">            <span class="keyword">break</span>;     </span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">UIDeviceOrientationUnknown</span>:  </span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"未知方向"</span>);  </span><br><span class="line">            <span class="keyword">break</span>;  </span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">UIDeviceOrientationLandscapeLeft</span>:  </span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"屏幕向左橫置"</span>);  </span><br><span class="line">            <span class="keyword">break</span>;  </span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">UIDeviceOrientationLandscapeRight</span>:  </span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"屏幕向右橫置"</span>);  </span><br><span class="line">            <span class="keyword">break</span>;  </span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">UIDeviceOrientationPortrait</span>:  </span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"屏幕直立"</span>);  </span><br><span class="line">            <span class="keyword">break</span>;  </span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">UIDeviceOrientationPortraitUpsideDown</span>:  </span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"屏幕直立，上下顛倒"</span>);  </span><br><span class="line">            <span class="keyword">break</span>;</span><br></pre></td></tr></table></figure>
+<p>从上面可以看到所有的设备方向，而视频方向videoOrientation没有那么多分类，它分为：<br>AVCaptureVideoOrientationPortrait   home健在下<br>AVCaptureVideoOrientationPortraitUpsideDown  home健在上<br>AVCaptureVideoOrientationLandscapeRight     home健在右<br>AVCaptureVideoOrientationLandscapeLeft     home健在左<br>这些视频方向，是视频或拍照时的输入方向，而我们的数据输出时会跟具这些输入方向自动对图片或视频进行矩阵变换，以达到最佳的用户体验。<br>这里以拍照举个例子(视频同理)：<br>假如你横着手机拍了一张照片，第一次你在拍照前不传入视频方向，它默认为AVCaptureVideoOrientationPortrait，这是正常手机拿着的姿势，所以到输出时不会对图片进行矩阵变换，当你把图片存入相册时，你会发现，你要正确查看这张图，你也需要横着手机看。如果你是倒着手机拍的，就需要倒着手机看。但是如果你在拍照前传入视频方向，比如你横着手机拍，并且home健在右，就传入参数AVCaptureVideoOrientationLandscapeRight，这时你存入相册的照片就可以以正常拿手机的姿势查看它了。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在拍照前通过会话连接，传入当前输入视频方向(视频同理也可以这样做)</span></span><br><span class="line"><span class="built_in">AVCaptureConnection</span> *connection = [_imageOutput connectionWithMediaType:<span class="built_in">AVMediaTypeVideo</span>];</span><br><span class="line">    <span class="keyword">if</span> (connection.isVideoOrientationSupported) &#123;</span><br><span class="line">        connection.videoOrientation = [<span class="keyword">self</span> currentVideoOrientation];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>苹果给出的类处理后都是默认正常拿手机的姿势观看，不管是图片还是视频，如果我们想拍出的所有图片或视频都需要横着手机看，我们这时可以不传入视频方向，这样视频到输出时就不会被变换，我们在视频输入类中，手动对视频进行transform变换，这样就可以实现我们想要的查看方式，在本例中，视频就是用的这种处理方式。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 视频的播放方向，后面计算视频旋转角度使用</span></span><br><span class="line">_referenceOrientation = <span class="built_in">AVCaptureVideoOrientationPortrait</span>;</span><br><span class="line"></span><br><span class="line"> <span class="comment">// 这行代码在设置视频输入方向为默认输入方向</span></span><br><span class="line"> _videoConnection.videoOrientation =   <span class="built_in">AVCaptureVideoOrientationPortrait</span>;</span><br><span class="line"></span><br><span class="line"> <span class="comment">// 视频输入类中手动旋转视频方向</span></span><br><span class="line"> _assetVideoInput.transform = [<span class="keyword">self</span> transformFromCurrentVideoOrientationToOrientation:<span class="keyword">self</span>.referenceOrientation];</span><br><span class="line">  </span><br><span class="line"> <span class="comment">// 旋转视频方向函数实现</span></span><br><span class="line"> -  (<span class="built_in">CGAffineTransform</span>)transformFromCurrentVideoOrientationToOrientation:(<span class="built_in">AVCaptureVideoOrientation</span>)orientation</span><br><span class="line"> &#123;</span><br><span class="line">        <span class="built_in">CGFloat</span> orientationAngleOffset = [<span class="keyword">self</span> angleOffsetFromPortraitOrientationToOrientation:orientation];</span><br><span class="line">        <span class="built_in">CGFloat</span> videoOrientationAngleOffset = [<span class="keyword">self</span> angleOffsetFromPortraitOrientationToOrientation:<span class="keyword">self</span>.motionManager.videoOrientation];</span><br><span class="line">        <span class="built_in">CGFloat</span> angleOffset;</span><br><span class="line">        <span class="keyword">if</span> ([<span class="keyword">self</span> activeCamera].position == <span class="built_in">AVCaptureDevicePositionBack</span>)  &#123;</span><br><span class="line">         angleOffset = videoOrientationAngleOffset - orientationAngleOffset + M_PI_2;</span><br><span class="line">     &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">         angleOffset = orientationAngleOffset - videoOrientationAngleOffset + M_PI_2;</span><br><span class="line">     &#125;</span><br><span class="line">        <span class="built_in">CGAffineTransform</span> transform = <span class="built_in">CGAffineTransformMakeRotation</span>(angleOffset);</span><br><span class="line">        <span class="keyword">return</span> transform;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> - (<span class="built_in">CGFloat</span>)angleOffsetFromPortraitOrientationToOrientation:(<span class="built_in">AVCaptureVideoOrientation</span>)orientation</span><br><span class="line"> &#123;</span><br><span class="line">    <span class="built_in">CGFloat</span> angle = <span class="number">0.0</span>;</span><br><span class="line">    <span class="keyword">switch</span> (orientation)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">AVCaptureVideoOrientationPortrait</span>:</span><br><span class="line">            angle = <span class="number">0.0</span>;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">AVCaptureVideoOrientationPortraitUpsideDown</span>:</span><br><span class="line">            angle = M_PI;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">AVCaptureVideoOrientationLandscapeRight</span>:</span><br><span class="line">            angle = -M_PI_2;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="built_in">AVCaptureVideoOrientationLandscapeLeft</span>:</span><br><span class="line">            angle = M_PI_2;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> angle;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>项目地址<br><a href="https://github.com/cdcyd/CCCamera" target="_blank" rel="noopener">https://github.com/cdcyd/CCCamera</a></p>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/AVFoundation/" rel="tag"># AVFoundation</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/08/15/OpenGL ES(三) 纹理/" rel="next" title="OpenGL ES(三) 纹理">
+                <i class="fa fa-chevron-left"></i> OpenGL ES(三) 纹理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/09/02/配置glew:glut:glfw3:gltools环境/" rel="prev" title="Mac下使用OpenGL——配置glew/glut/glfw3/gltools环境">
+                Mac下使用OpenGL——配置glew/glut/glfw3/gltools环境 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/icon.jpg"
+                alt="cyd" />
+            
+              <p class="site-author-name" itemprop="name">cyd</p>
+              <p class="site-description motion-element" itemprop="description">iOS、AVFoundation、OpenGL ES</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/cdcyd" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:1035060416@qq.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-qq"></i>E-Mail</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.jianshu.com/u/2841ca1b2535" title="简书主页" target="_blank">简书主页</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2024</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">cyd</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">229k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">3:false</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.4.4</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Pisces</a> v6.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.2.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.2.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.2.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.2.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.2.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.2.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.2.0"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('Copied')
+          else $(this).text('Copy failed')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

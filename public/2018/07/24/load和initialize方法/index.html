@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-flash.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.2.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicont.png?v=6.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png?v=6.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png?v=6.2.0">
+
+
+  <link rel="mask-icon" href="/images/favicont.png?v=6.2.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.2.0',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="在iOS中，所有的类都继承自NSObject，我们来看一下初始化相关的几个方法12345678+ (void)load;+ (void)initialize;- (instancetype)init ;+ (instancetype)new OBJC_SWIFT_UNAVAILABLE(&quot;use object initializers instead&quot;);+ (instancetype)alloc">
+<meta name="keywords" content="Foundation">
+<meta property="og:type" content="article">
+<meta property="og:title" content="load和initialize方法">
+<meta property="og:url" content="https://cdcyd.github.io/2018/07/24/load和initialize方法/index.html">
+<meta property="og:site_name" content="cyd’s blog">
+<meta property="og:description" content="在iOS中，所有的类都继承自NSObject，我们来看一下初始化相关的几个方法12345678+ (void)load;+ (void)initialize;- (instancetype)init ;+ (instancetype)new OBJC_SWIFT_UNAVAILABLE(&quot;use object initializers instead&quot;);+ (instancetype)alloc">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2018-10-30T06:38:19.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="load和initialize方法">
+<meta name="twitter:description" content="在iOS中，所有的类都继承自NSObject，我们来看一下初始化相关的几个方法12345678+ (void)load;+ (void)initialize;- (instancetype)init ;+ (instancetype)new OBJC_SWIFT_UNAVAILABLE(&quot;use object initializers instead&quot;);+ (instancetype)alloc">
+
+
+
+
+
+
+  <link rel="canonical" href="https://cdcyd.github.io/2018/07/24/load和initialize方法/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>load和initialize方法 | cyd’s blog</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">cyd’s blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+    <a href="/about/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-user"></i> <br />关于</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+  
+  
+  
+    
+      
+    
+    <a href="https://github.com/cdcyd" class="github-corner" target="_blank" title="Follow me on GitHub" aria-label="Follow me on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#222; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg>
+    
+      </a>
+    
+
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://cdcyd.github.io/2018/07/24/load和initialize方法/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="cyd">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/icon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="cyd’s blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">load和initialize方法
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-07-24 14:29:00" itemprop="dateCreated datePublished" datetime="2018-07-24T14:29:00+08:00">2018-07-24</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-10-30 14:38:19" itemprop="dateModified" datetime="2018-10-30T14:38:19+08:00">2018-10-30</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Objective-C/" itemprop="url" rel="index"><span itemprop="name">Objective-C</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">3.7k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">3 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在iOS中，所有的类都继承自NSObject，我们来看一下初始化相关的几个方法<br><figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">+ (void)load<span class="comment">;</span></span><br><span class="line">+ (void)initialize<span class="comment">;</span></span><br><span class="line">- (<span class="keyword">instancetype)init </span><span class="comment">;</span></span><br><span class="line"></span><br><span class="line">+ (<span class="keyword">instancetype)new </span>OBJC_SWIFT_UNAVAILABLE(<span class="string">"use object initializers instead"</span>)<span class="comment">;</span></span><br><span class="line">+ (<span class="keyword">instancetype)allocWithZone:(struct </span>_NSZone *)zone OBJC_SWIFT_UNAVAILABLE(<span class="string">"use object initializers instead"</span>)<span class="comment">;</span></span><br><span class="line">+ (<span class="keyword">instancetype)alloc </span>OBJC_SWIFT_UNAVAILABLE(<span class="string">"use object initializers instead"</span>)<span class="comment">;</span></span><br><span class="line">- (void)dealloc OBJC_SWIFT_UNAVAILABLE(<span class="string">"use 'deinit' to define a de-initializer"</span>)<span class="comment">;</span></span><br></pre></td></tr></table></figure></p>
+<p>OBJC_SWIFT_UNAVAILABLE 宏表示只能在OC中使用，在Swift中不能使用<br><code>+(instancetype)new</code> 可以看作是alloc与init方法的结合<br><code>+(instancetype)allocWithZone</code> alloc也是调用该方法，参数传NULL<br><code>+(instancetype)alloc</code> 为对象分配内存空间<br><code>-(instancetype)init</code> 初始化变量<br><code>-(void)dealloc</code> 销毁对象时调用的方法<br>上面的方法是我们开发时比较常用的，也很好理解，而load和initialize这两个方法并不常用，而且也有点特殊，下面我们就来详细说一下这两个方法</p>
+<p>在介绍之前，我们首先来了解一下类的使用，我们要使用一个类，大概要经过以下步骤</p>
+<ol>
+<li>启动App，程序开始加载类到内存中(代码区)+(void)load</li>
+<li>首次使用该类时，创建类对象(我们可以把它看作是一个单例，它在整个程序中只有一份)+(void)initialize</li>
+<li>通过类对象创建实例对象+(instancetype)alloc、-(instancetype)init</li>
+<li>通过实例对象，我们就可使用实例方法、类属性了</li>
+</ol>
+<p>从上面的步骤我们也大概了解到load和initialize的调用时机了，下面在来详细说一下</p>
+<p><code>+(void)load</code></p>
+<ol>
+<li>在App启动后立即加载类，此时就会调用该函数，所以它的调用时机很早，甚至在main函数之前</li>
+<li>两个不相关的类的加载顺序是随机的</li>
+<li>如果一个类没有load方法，则该类就不会调用load方法，它不会去继承父类的load</li>
+<li>如果两个类有依赖关系，则优先加载被依赖的类</li>
+<li>如果两个类是继承关系，则优先加载父类，再加载子类</li>
+<li>Category的load也会收到调用，但顺序上在主类的load调用之后</li>
+</ol>
+<p>所以在load方法中，我们不需要调用super，因为在加载子类之前肯定加载完成父类了，即父类的load方法肯定已经执行过了，同时这里也有一个缺点，因为load方法执行时，运行环境还不确定，如果我们在load函数中使用了其它不相关的类，我们并不能保证该类已经加载完成且可用，甚至有时还要自己负责做auto release处理</p>
+<p><code>+(void)initialize</code></p>
+<ol>
+<li>在首次使用类时，会生成类对象，该方法在此时调用，initialize其实就是一个懒加载方法</li>
+<li>如果两个类是继承关系，会先调用父类，再调用子类</li>
+<li>如果子类没有实现initialize，则会继承父类的initialize</li>
+</ol>
+<p>在initialize方法中，我们同样不需要调用super，因为调用子类之前，父类已经调用一次了，而且如果子类没有实现initialize方法时，在首次使用子类时还会调用一次父类的方法，它与load方法还有不同的是，在initialize调用时，运行环境基本健全(在main函数之后，我们要保证在load方法中没有使用该类，不然initialize就没有该优势)，所以此时我们可以做更多的操作</p>
+<p>上面原理讲完了，下面再写一个Demo来测试一下</p>
+<h5 id="一、先来测试一下load方法，下面贴出源码，很简单"><a href="#一、先来测试一下load方法，下面贴出源码，很简单" class="headerlink" title="一、先来测试一下load方法，下面贴出源码，很简单"></a>一、先来测试一下load方法，下面贴出源码，很简单</h5><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Test继承自NSObject</span></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">Test</span></span></span><br><span class="line">+ (<span class="keyword">void</span>)load &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"load Test"</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Test1继承自Test类</span></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">Test1</span></span></span><br><span class="line">+ (<span class="keyword">void</span>)load &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"load Test1"</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">char</span> * argv[]) &#123;</span><br><span class="line">    <span class="keyword">@autoreleasepool</span> &#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@"main"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">UIApplicationMain</span>(argc, argv, <span class="literal">nil</span>, <span class="built_in">NSStringFromClass</span>([AppDelegate <span class="keyword">class</span>]));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下面是输出<br><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">2018<span class="selector-tag">-07-24</span> 14<span class="selector-pseudo">:17</span><span class="selector-pseudo">:28.113416+0800</span> <span class="selector-tag">Test</span><span class="selector-attr">[1142:222096]</span> <span class="selector-tag">load</span> <span class="selector-tag">Test</span></span><br><span class="line">2018<span class="selector-tag">-07-24</span> 14<span class="selector-pseudo">:17</span><span class="selector-pseudo">:28.113760+0800</span> <span class="selector-tag">Test</span><span class="selector-attr">[1142:222096]</span> <span class="selector-tag">load</span> <span class="selector-tag">Test1</span></span><br><span class="line">2018<span class="selector-tag">-07-24</span> 14<span class="selector-pseudo">:17</span><span class="selector-pseudo">:28.113851+0800</span> <span class="selector-tag">Test</span><span class="selector-attr">[1142:222096]</span> <span class="selector-tag">main</span></span><br></pre></td></tr></table></figure></p>
+<p>可以看出调用顺序 父类Text  -&gt; 子类Text1  -&gt; main函数<br>如果注释掉子类的load方法，则调用如下<br><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2018<span class="selector-tag">-07-24</span> 14<span class="selector-pseudo">:20</span><span class="selector-pseudo">:13.292581+0800</span> <span class="selector-tag">Test</span><span class="selector-attr">[1148:222715]</span> <span class="selector-tag">load</span> <span class="selector-tag">Test</span></span><br><span class="line">2018<span class="selector-tag">-07-24</span> 14<span class="selector-pseudo">:20</span><span class="selector-pseudo">:13.292943+0800</span> <span class="selector-tag">Test</span><span class="selector-attr">[1148:222715]</span> <span class="selector-tag">main</span></span><br></pre></td></tr></table></figure></p>
+<p>这个测试没有覆盖load方法的所有特性，但可以测出上面所说的load方法的第1、3、5条特性</p>
+<h5 id="二、再来测试一下initialize方法调用"><a href="#二、再来测试一下initialize方法调用" class="headerlink" title="二、再来测试一下initialize方法调用"></a>二、再来测试一下initialize方法调用</h5><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">Test</span></span></span><br><span class="line">+ (<span class="keyword">void</span>)initialize &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"initialize Test"</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">Test1</span></span></span><br><span class="line">+ (<span class="keyword">void</span>)initialize &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"initialize Test1"</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">ViewController</span></span></span><br><span class="line">- (<span class="keyword">void</span>)viewDidLoad &#123;</span><br><span class="line">    [<span class="keyword">super</span> viewDidLoad];</span><br><span class="line"></span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"首次使用Test"</span>);</span><br><span class="line">    Test *obj = [[Test alloc] init];</span><br><span class="line"></span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"首次使用Test1"</span>);</span><br><span class="line">    Test1 *obj2 = [[Test1 alloc] init];</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<p>输出如下<br><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">2018<span class="selector-tag">-07-24</span> 14<span class="selector-pseudo">:24</span><span class="selector-pseudo">:34.439448+0800</span> <span class="selector-tag">Test</span><span class="selector-attr">[1152:223417]</span> <span class="selector-tag">main</span></span><br><span class="line">2018<span class="selector-tag">-07-24</span> 14<span class="selector-pseudo">:24</span><span class="selector-pseudo">:34.490282+0800</span> <span class="selector-tag">Test</span><span class="selector-attr">[1152:223417]</span> 首次使用<span class="selector-tag">Test</span></span><br><span class="line">2018<span class="selector-tag">-07-24</span> 14<span class="selector-pseudo">:24</span><span class="selector-pseudo">:34.490326+0800</span> <span class="selector-tag">Test</span><span class="selector-attr">[1152:223417]</span> <span class="selector-tag">initialize</span> <span class="selector-tag">Test</span></span><br><span class="line">2018<span class="selector-tag">-07-24</span> 14<span class="selector-pseudo">:24</span><span class="selector-pseudo">:34.490346+0800</span> <span class="selector-tag">Test</span><span class="selector-attr">[1152:223417]</span> 首次使用<span class="selector-tag">Test1</span></span><br><span class="line">2018<span class="selector-tag">-07-24</span> 14<span class="selector-pseudo">:24</span><span class="selector-pseudo">:34.490361+0800</span> <span class="selector-tag">Test</span><span class="selector-attr">[1152:223417]</span> <span class="selector-tag">initialize</span> <span class="selector-tag">Test1</span></span><br></pre></td></tr></table></figure></p>
+<p>如果注释掉Text1的initialize方法后输出如下<br><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">2018<span class="selector-tag">-07-24</span> 14<span class="selector-pseudo">:25</span><span class="selector-pseudo">:25.371237+0800</span> <span class="selector-tag">Test</span><span class="selector-attr">[1154:223686]</span> <span class="selector-tag">main</span></span><br><span class="line">2018<span class="selector-tag">-07-24</span> 14<span class="selector-pseudo">:25</span><span class="selector-pseudo">:25.423578+0800</span> <span class="selector-tag">Test</span><span class="selector-attr">[1154:223686]</span> 首次使用<span class="selector-tag">Test</span></span><br><span class="line">2018<span class="selector-tag">-07-24</span> 14<span class="selector-pseudo">:25</span><span class="selector-pseudo">:25.423622+0800</span> <span class="selector-tag">Test</span><span class="selector-attr">[1154:223686]</span> <span class="selector-tag">initialize</span> <span class="selector-tag">Test</span></span><br><span class="line">2018<span class="selector-tag">-07-24</span> 14<span class="selector-pseudo">:25</span><span class="selector-pseudo">:25.423642+0800</span> <span class="selector-tag">Test</span><span class="selector-attr">[1154:223686]</span> 首次使用<span class="selector-tag">Test1</span></span><br><span class="line">2018<span class="selector-tag">-07-24</span> 14<span class="selector-pseudo">:25</span><span class="selector-pseudo">:25.423655+0800</span> <span class="selector-tag">Test</span><span class="selector-attr">[1154:223686]</span> <span class="selector-tag">initialize</span> <span class="selector-tag">Test</span></span><br></pre></td></tr></table></figure></p>
+<p>从输出可以看出上面说的initialize的3个特性</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Foundation/" rel="tag"># Foundation</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/09/识别图片中二维码/" rel="next" title="识别图片中二维码">
+                <i class="fa fa-chevron-left"></i> 识别图片中二维码
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/08/02/多线程死锁问题/" rel="prev" title="多线程死锁问题">
+                多线程死锁问题 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/icon.jpg"
+                alt="cyd" />
+            
+              <p class="site-author-name" itemprop="name">cyd</p>
+              <p class="site-description motion-element" itemprop="description">iOS、AVFoundation、OpenGL ES</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/cdcyd" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:1035060416@qq.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-qq"></i>E-Mail</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.jianshu.com/u/2841ca1b2535" title="简书主页" target="_blank">简书主页</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-5"><a class="nav-link" href="#一、先来测试一下load方法，下面贴出源码，很简单"><span class="nav-number">1.</span> <span class="nav-text">一、先来测试一下load方法，下面贴出源码，很简单</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#二、再来测试一下initialize方法调用"><span class="nav-number">2.</span> <span class="nav-text">二、再来测试一下initialize方法调用</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2024</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">cyd</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">229k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">3:false</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.4.4</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Pisces</a> v6.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.2.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.2.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.2.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.2.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.2.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.2.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.2.0"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('Copied')
+          else $(this).text('Copy failed')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>

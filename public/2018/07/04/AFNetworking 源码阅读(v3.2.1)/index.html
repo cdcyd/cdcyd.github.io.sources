@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-flash.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=6.2.0" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/favicont.png?v=6.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png?v=6.2.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png?v=6.2.0">
+
+
+  <link rel="mask-icon" href="/images/favicont.png?v=6.2.0" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.2.0',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="AFNetworking项目地址 https://github.com/AFNetworking/AFNetworking下载打开后目录1.AFNetworking文件下是实现HTTP请求的类2.UIKit+AFNetworking文件下是实现图片下载的类 下面我们主要看AFNetworking的HTTP请求实现，我们使用AF发送一个请求很简单，如下面的一个GET请求的例子123456789101">
+<meta name="keywords" content="AFNetworking">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AFNetworking 源码阅读(v3.2.1)">
+<meta property="og:url" content="https://cdcyd.github.io/2018/07/04/AFNetworking 源码阅读(v3.2.1)/index.html">
+<meta property="og:site_name" content="cyd’s blog">
+<meta property="og:description" content="AFNetworking项目地址 https://github.com/AFNetworking/AFNetworking下载打开后目录1.AFNetworking文件下是实现HTTP请求的类2.UIKit+AFNetworking文件下是实现图片下载的类 下面我们主要看AFNetworking的HTTP请求实现，我们使用AF发送一个请求很简单，如下面的一个GET请求的例子123456789101">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1258499-be018d56578131c7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/1258499-27975ee4a29a30e0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2018-10-30T06:41:04.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="AFNetworking 源码阅读(v3.2.1)">
+<meta name="twitter:description" content="AFNetworking项目地址 https://github.com/AFNetworking/AFNetworking下载打开后目录1.AFNetworking文件下是实现HTTP请求的类2.UIKit+AFNetworking文件下是实现图片下载的类 下面我们主要看AFNetworking的HTTP请求实现，我们使用AF发送一个请求很简单，如下面的一个GET请求的例子123456789101">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/1258499-be018d56578131c7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+
+
+
+  <link rel="canonical" href="https://cdcyd.github.io/2018/07/04/AFNetworking 源码阅读(v3.2.1)/"/>
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>AFNetworking 源码阅读(v3.2.1) | cyd’s blog</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">cyd’s blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+    <a href="/about/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-user"></i> <br />关于</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />标签</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br />分类</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />归档</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+  
+  
+  
+    
+      
+    
+    <a href="https://github.com/cdcyd" class="github-corner" target="_blank" title="Follow me on GitHub" aria-label="Follow me on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#222; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg>
+    
+      </a>
+    
+
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://cdcyd.github.io/2018/07/04/AFNetworking 源码阅读(v3.2.1)/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="cyd">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/icon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="cyd’s blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">AFNetworking 源码阅读(v3.2.1)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-07-04 17:04:00" itemprop="dateCreated datePublished" datetime="2018-07-04T17:04:00+08:00">2018-07-04</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-10-30 14:41:04" itemprop="dateModified" datetime="2018-10-30T14:41:04+08:00">2018-10-30</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/源码阅读/" itemprop="url" rel="index"><span itemprop="name">源码阅读</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">47k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">39 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>AFNetworking项目地址 <a href="https://github.com/AFNetworking/AFNetworking" target="_blank" rel="noopener">https://github.com/AFNetworking/AFNetworking</a><br>下载打开后目录<br><img src="https://upload-images.jianshu.io/upload_images/1258499-be018d56578131c7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="AFNetworking"><br>1.AFNetworking文件下是实现HTTP请求的类<br>2.UIKit+AFNetworking文件下是实现图片下载的类</p>
+<p>下面我们主要看AFNetworking的HTTP请求实现，我们使用AF发送一个请求很简单，如下面的一个GET请求的例子<br><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 请求管理器</span></span><br><span class="line">AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];</span><br><span class="line"><span class="comment">// 参数JSON格式</span></span><br><span class="line">manager.requestSerializer = [AFJSONRequestSerializer serializerWithWritingOptions:<span class="built_in">NSJSONWritingPrettyPrinted</span>];</span><br><span class="line"><span class="comment">// 返回JSON格式</span></span><br><span class="line">manager.responseSerializer = [AFJSONResponseSerializer serializerWithReadingOptions:<span class="built_in">NSJSONReadingAllowFragments</span>];</span><br><span class="line"><span class="comment">// 超时时间</span></span><br><span class="line">manager.requestSerializer.timeoutInterval = <span class="number">30</span>;</span><br><span class="line"><span class="comment">// 最大线程数</span></span><br><span class="line">manager.operationQueue.maxConcurrentOperationCount = <span class="number">5</span>;</span><br><span class="line"><span class="comment">// 开始发送请求</span></span><br><span class="line">[manager GET:<span class="string">@"url"</span> parameters:<span class="literal">nil</span> progress:<span class="literal">nil</span> success:^(<span class="built_in">NSURLSessionDataTask</span> * _Nonnull task, <span class="keyword">id</span>  _Nullable responseObject) &#123;</span><br><span class="line">    <span class="comment">// 请求成功</span></span><br><span class="line">&#125; failure:^(<span class="built_in">NSURLSessionDataTask</span> * _Nullable task, <span class="built_in">NSError</span> * _Nonnull error) &#123;</span><br><span class="line">    <span class="comment">// 请求失败</span></span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure></p>
+<p>上面涉及到了<code>AFHTTPSessionManager</code>、<code>AFJSONRequestSerializer</code>、<code>AFJSONResponseSerializer</code>几个类，下面我们就来挨个看他们都是干什么的</p>
+<ul>
+<li>AFJSONRequestSerializer：请求参数按JSON格式序列化，还有一个AFPropertyListRequestSerializer：请求参数按Plist格式序列化，它们都继承自AFHTTPRequestSerializer，而AFHTTPRequestSerializer的参数序列化格式是默认的普通的http的编码格式，即url?key1=value1&amp;key2=value2，下面我们就来看一下AFHTTPRequestSerializer<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">AFHTTPRequestSerializer</span> : <span class="title">NSObject</span> &lt;<span class="title">AFURLRequestSerialization</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/// 返回参数编码的编码样式，默认为 NSUTF8StringEncoding</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="built_in">NSStringEncoding</span> stringEncoding;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 是否可以通过手机网络发送请求</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="built_in">BOOL</span> allowsCellularAccess;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 缓存策略</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="built_in">NSURLRequestCachePolicy</span> cachePolicy;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 是否对cookies进行默认处理  默认为YES</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="built_in">BOOL</span> HTTPShouldHandleCookies;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 是否可以在上个数据传输的请求完成后继续传输数据 默认为No</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="built_in">BOOL</span> HTTPShouldUsePipelining;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 服务器的类型 默认为NSURLNetworkServiceTypeDefault</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="built_in">NSURLRequestNetworkServiceType</span> networkServiceType;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 一个请求的超时时长 默认为60s</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="built_in">NSTimeInterval</span> timeoutInterval;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 请求头的信息， 默认包含 Accept-Language 和 User-Agent</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readonly</span>, <span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) <span class="built_in">NSDictionary</span> &lt;<span class="built_in">NSString</span> *, <span class="built_in">NSString</span> *&gt; *HTTPRequestHeaders;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 返回一个默认配置序列化对象</span></span><br><span class="line">+ (<span class="keyword">instancetype</span>)serializer;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 设置Header里面的字段，如果为field为空，那么这个字段会从Header里面移除</span></span><br><span class="line">- (<span class="keyword">void</span>)setValue:(<span class="keyword">nullable</span> <span class="built_in">NSString</span> *)value forHTTPHeaderField:(<span class="built_in">NSString</span> *)field;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 根据key取出Hearder里面的值，返回字符串或者nil</span></span><br><span class="line">- (<span class="keyword">nullable</span> <span class="built_in">NSString</span> *)valueForHTTPHeaderField:(<span class="built_in">NSString</span> *)field;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 设置HTTP认证的用户名和密码</span></span><br><span class="line">- (<span class="keyword">void</span>)setAuthorizationHeaderFieldWithUsername:(<span class="built_in">NSString</span> *)username password:(<span class="built_in">NSString</span> *)password;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 移除验证的用户名和密码</span></span><br><span class="line">- (<span class="keyword">void</span>)clearAuthorizationHeader;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 将参数编码成一个查询字符串（默认包含：GET、DELETE、HEAD）</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) <span class="built_in">NSSet</span> &lt;<span class="built_in">NSString</span> *&gt; *HTTPMethodsEncodingParametersInURI;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 根据之前预定义的style设置查询字符串序列化的方法</span></span><br><span class="line">- (<span class="keyword">void</span>)setQueryStringSerializationWithStyle:(AFHTTPRequestQueryStringSerializationStyle)style;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 根据指定的block设置一个自定义查询字符序列化的方法。Block中传入一个request，编码的参数parameters和一个error，返回请求参数编码成一个查询字符串</span></span><br><span class="line">- (<span class="keyword">void</span>)setQueryStringSerializationWithBlock:(<span class="keyword">nullable</span> <span class="built_in">NSString</span> * (^)(<span class="built_in">NSURLRequest</span> *request, <span class="keyword">id</span> parameters, <span class="built_in">NSError</span> * __autoreleasing *error))block;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 创建一个请求，根据传入的Method，如果为 `GET`、`HEAD`、`DELETE`，参数会拼接在Url的后面，否则参数会设置成HTTP的请求体，并根据request指定的parameterEncoding参数编码</span></span><br><span class="line">- (<span class="built_in">NSMutableURLRequest</span> *)requestWithMethod:(<span class="built_in">NSString</span> *)method</span><br><span class="line">                                 URLString:(<span class="built_in">NSString</span> *)URLString</span><br><span class="line">                                parameters:(<span class="keyword">nullable</span> <span class="keyword">id</span>)parameters</span><br><span class="line">                                     error:(<span class="built_in">NSError</span> * _Nullable __autoreleasing *)error;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 通过`AFMultipartFormData`类型的formData来构建请求体</span></span><br><span class="line">- (<span class="built_in">NSMutableURLRequest</span> *)multipartFormRequestWithMethod:(<span class="built_in">NSString</span> *)method</span><br><span class="line">                                              URLString:(<span class="built_in">NSString</span> *)URLString</span><br><span class="line">                                             parameters:(<span class="keyword">nullable</span> <span class="built_in">NSDictionary</span> &lt;<span class="built_in">NSString</span> *, <span class="keyword">id</span>&gt; *)parameters</span><br><span class="line">                              constructingBodyWithBlock:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="keyword">id</span> &lt;AFMultipartFormData&gt; formData))block</span><br><span class="line">                                                  error:(<span class="built_in">NSError</span> * _Nullable __autoreleasing *)error;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 通过request创建一个request，新request的httpBody是`fileURL`指定的文件，并且是通过`HTTPBodyStream`这个属性添加，`HTTPBodyStream`属性的数据会自动添加为httpBody</span></span><br><span class="line">- (<span class="built_in">NSMutableURLRequest</span> *)requestWithMultipartFormRequest:(<span class="built_in">NSURLRequest</span> *)request</span><br><span class="line">                             writingStreamContentsToFile:(<span class="built_in">NSURL</span> *)fileURL</span><br><span class="line">                                       completionHandler:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSError</span> * _Nullable error))handler;</span><br><span class="line"></span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>总结一下AFHTTPRequestSerializer，就是封装请求头信息，序列化请求参数<br>HTTP的头信息包括：请求方式、请求的URL 、HTTP的版本、Host、 Accept、 Cookie、 User-Agent、Accept-Language、Accept-Encoding、Connection等，其中有很多就是AF帮助我们构建的，下面贴出AFHTTPRequestSerializer的初始化方法<br><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)init &#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">self</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 编码方式</span></span><br><span class="line">    <span class="keyword">self</span>.stringEncoding = <span class="built_in">NSUTF8StringEncoding</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 存储HTTP头信息</span></span><br><span class="line">    <span class="keyword">self</span>.mutableHTTPRequestHeaders = [<span class="built_in">NSMutableDictionary</span> dictionary];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 修改头信息的线程</span></span><br><span class="line">    <span class="keyword">self</span>.requestHeaderModificationQueue = dispatch_queue_create(<span class="string">"requestHeaderModificationQueue"</span>, DISPATCH_QUEUE_CONCURRENT);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 构建Accept-Language信息</span></span><br><span class="line">    <span class="built_in">NSMutableArray</span> *acceptLanguagesComponents = [<span class="built_in">NSMutableArray</span> array];</span><br><span class="line">    [[<span class="built_in">NSLocale</span> preferredLanguages] enumerateObjectsUsingBlock:^(<span class="keyword">id</span> obj, <span class="built_in">NSUInteger</span> idx, <span class="built_in">BOOL</span> *stop) &#123;</span><br><span class="line">        <span class="keyword">float</span> q = <span class="number">1.0</span>f - (idx * <span class="number">0.1</span>f);</span><br><span class="line">        [acceptLanguagesComponents addObject:[<span class="built_in">NSString</span> stringWithFormat:<span class="string">@"%@;q=%0.1g"</span>, obj, q]];</span><br><span class="line">        *stop = q &lt;= <span class="number">0.5</span>f;</span><br><span class="line">    &#125;];</span><br><span class="line">    [<span class="keyword">self</span> setValue:[acceptLanguagesComponents componentsJoinedByString:<span class="string">@", "</span>] forHTTPHeaderField:<span class="string">@"Accept-Language"</span>];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 构建User-Agent信息（源码这里分类iOS、Watch、MAC三中，这里简化为iOS）</span></span><br><span class="line">    <span class="built_in">NSString</span> *userAgent = [<span class="built_in">NSString</span> stringWithFormat:<span class="string">@"%@/%@ (%@; iOS %@; Scale/%0.2f)"</span>, [[<span class="built_in">NSBundle</span> mainBundle] infoDictionary][(__bridge <span class="built_in">NSString</span> *)kCFBundleExecutableKey] ?: [[<span class="built_in">NSBundle</span> mainBundle] infoDictionary][(__bridge <span class="built_in">NSString</span> *)kCFBundleIdentifierKey], [[<span class="built_in">NSBundle</span> mainBundle] infoDictionary][<span class="string">@"CFBundleShortVersionString"</span>] ?: [[<span class="built_in">NSBundle</span> mainBundle] infoDictionary][(__bridge <span class="built_in">NSString</span> *)kCFBundleVersionKey], [[<span class="built_in">UIDevice</span> currentDevice] model], [[<span class="built_in">UIDevice</span> currentDevice] systemVersion], [[<span class="built_in">UIScreen</span> mainScreen] scale]];</span><br><span class="line">    <span class="keyword">if</span> (![userAgent canBeConvertedToEncoding:<span class="built_in">NSASCIIStringEncoding</span>]) &#123;</span><br><span class="line">        <span class="built_in">NSMutableString</span> *mutableUserAgent = [userAgent mutableCopy];</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">CFStringTransform</span>((__bridge <span class="built_in">CFMutableStringRef</span>)(mutableUserAgent), <span class="literal">NULL</span>, (__bridge <span class="built_in">CFStringRef</span>)<span class="string">@"Any-Latin; Latin-ASCII; [:^ASCII:] Remove"</span>, <span class="literal">false</span>)) &#123;</span><br><span class="line">            userAgent = mutableUserAgent;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    [<span class="keyword">self</span> setValue:userAgent forHTTPHeaderField:<span class="string">@"User-Agent"</span>];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 需要转换为查询字符串参数的请求类型 默认 "GET" "HEAD" "DELETE"</span></span><br><span class="line">    <span class="keyword">self</span>.HTTPMethodsEncodingParametersInURI = [<span class="built_in">NSSet</span> setWithObjects:<span class="string">@"GET"</span>, <span class="string">@"HEAD"</span>, <span class="string">@"DELETE"</span>, <span class="literal">nil</span>];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 添加一些属性的KVC，包括allowsCellularAccess、cachePolicy、HTTPShouldHandleCookies、HTTPShouldUsePipelining、networkServiceType、timeoutInterval</span></span><br><span class="line">    <span class="keyword">self</span>.mutableObservedChangedKeyPaths = [<span class="built_in">NSMutableSet</span> set];</span><br><span class="line">    <span class="keyword">for</span> (<span class="built_in">NSString</span> *keyPath <span class="keyword">in</span> AFHTTPRequestSerializerObservedKeyPaths()) &#123;</span><br><span class="line">        <span class="keyword">if</span> ([<span class="keyword">self</span> respondsToSelector:<span class="built_in">NSSelectorFromString</span>(keyPath)]) &#123;</span><br><span class="line">            [<span class="keyword">self</span> addObserver:<span class="keyword">self</span> forKeyPath:keyPath options:<span class="built_in">NSKeyValueObservingOptionNew</span> context:AFHTTPRequestSerializerObserverContext];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>构建请求对象的方法有3个，如下截图<br><img src="https://upload-images.jianshu.io/upload_images/1258499-27975ee4a29a30e0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="构建请求发放申明"><br>下面贴出第一个方法的具体实现<br><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSMutableURLRequest</span> *)requestWithMethod:(<span class="built_in">NSString</span> *)method URLString:(<span class="built_in">NSString</span> *)URLString parameters:(<span class="keyword">id</span>)parameters error:(<span class="built_in">NSError</span> *__autoreleasing *)error</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSParameterAssert</span>(method);</span><br><span class="line">    <span class="built_in">NSParameterAssert</span>(URLString);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 基础url</span></span><br><span class="line">    <span class="built_in">NSURL</span> *url = [<span class="built_in">NSURL</span> URLWithString:URLString];</span><br><span class="line"></span><br><span class="line">    <span class="built_in">NSParameterAssert</span>(url);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 请求对象</span></span><br><span class="line">    <span class="built_in">NSMutableURLRequest</span> *mutableRequest = [[<span class="built_in">NSMutableURLRequest</span> alloc] initWithURL:url];</span><br><span class="line">    mutableRequest.HTTPMethod = method;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 设置请求参数</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="built_in">NSString</span> *keyPath <span class="keyword">in</span> AFHTTPRequestSerializerObservedKeyPaths()) &#123;</span><br><span class="line">        <span class="keyword">if</span> ([<span class="keyword">self</span>.mutableObservedChangedKeyPaths containsObject:keyPath]) &#123;</span><br><span class="line">            [mutableRequest setValue:[<span class="keyword">self</span> valueForKeyPath:keyPath] forKey:keyPath];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// AFURLRequestSerialization协议的方法，用于序列化参数，添加一些header信息</span></span><br><span class="line">    mutableRequest = [[<span class="keyword">self</span> requestBySerializingRequest:mutableRequest withParameters:parameters error:error] mutableCopy];</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> mutableRequest;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="built_in">NSURLRequest</span> *)requestBySerializingRequest:(<span class="built_in">NSURLRequest</span> *)request withParameters:(<span class="keyword">id</span>)parameters error:(<span class="built_in">NSError</span> *__autoreleasing *)error</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSParameterAssert</span>(request);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 深拷贝一份请求对象</span></span><br><span class="line">    <span class="built_in">NSMutableURLRequest</span> *mutableRequest = [request mutableCopy];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 设置header信息</span></span><br><span class="line">    [<span class="keyword">self</span>.HTTPRequestHeaders enumerateKeysAndObjectsUsingBlock:^(<span class="keyword">id</span> field, <span class="keyword">id</span> value, <span class="built_in">BOOL</span> * __unused stop) &#123;</span><br><span class="line">        <span class="keyword">if</span> (![request valueForHTTPHeaderField:field]) &#123;</span><br><span class="line">            [mutableRequest setValue:value forHTTPHeaderField:field];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 参数序列化</span></span><br><span class="line">    <span class="built_in">NSString</span> *query = <span class="literal">nil</span>;</span><br><span class="line">    <span class="keyword">if</span> (parameters) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.queryStringSerialization) &#123;</span><br><span class="line">            <span class="built_in">NSError</span> *serializationError;</span><br><span class="line">            query = <span class="keyword">self</span>.queryStringSerialization(request, parameters, &amp;serializationError);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (serializationError) &#123;</span><br><span class="line">                <span class="keyword">if</span> (error) &#123;</span><br><span class="line">                    *error = serializationError;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">switch</span> (<span class="keyword">self</span>.queryStringSerializationStyle) &#123;</span><br><span class="line">                <span class="keyword">case</span> AFHTTPRequestQueryStringDefaultStyle:</span><br><span class="line">                    query = AFQueryStringFromParameters(parameters);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ([<span class="keyword">self</span>.HTTPMethodsEncodingParametersInURI containsObject:[[request HTTPMethod] uppercaseString]]) &#123;</span><br><span class="line">        <span class="comment">// 将参数转换为查询字符串并拼接到url后面，默认"GET" "HEAD" "DELETE"请求会走这里</span></span><br><span class="line">        <span class="keyword">if</span> (query &amp;&amp; query.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            mutableRequest.URL = [<span class="built_in">NSURL</span> URLWithString:[[mutableRequest.URL absoluteString] stringByAppendingFormat:mutableRequest.URL.query ? <span class="string">@"&amp;%@"</span> : <span class="string">@"?%@"</span>, query]];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 其它请求将参数设置成HTTPBody，并且如果没有参数，则设置成""</span></span><br><span class="line">        <span class="keyword">if</span> (!query) &#123;</span><br><span class="line">            query = <span class="string">@""</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (![mutableRequest valueForHTTPHeaderField:<span class="string">@"Content-Type"</span>]) &#123;</span><br><span class="line">            [mutableRequest setValue:<span class="string">@"application/x-www-form-urlencoded"</span> forHTTPHeaderField:<span class="string">@"Content-Type"</span>];</span><br><span class="line">        &#125;</span><br><span class="line">        [mutableRequest setHTTPBody:[query dataUsingEncoding:<span class="keyword">self</span>.stringEncoding]];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> mutableRequest;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>到此，我们就构建NSURLRequest，其实它主要有两部分：构建头信息、处理参数</p>
+<p>下面我们再来看一下返回信息AFJSONResponseSerializer</p>
+<ul>
+<li>AFJSONResponseSerializer：它主要用于对返回二进制数据NSData的解析，继承自AFHTTPResponseSerializer，其中的JSON表示它能解析的类型<ol>
+<li>AFHTTPResponseSerializer：不做处理，直接返回NSData</li>
+<li>AFJSONResponseSerializer：JSON</li>
+<li>AFXMLParserResponseSerializer：xml</li>
+<li>AFXMLDocumentResponseSerializer：(Mac OS X) iPhone不能直接使用，需要用GData-XML</li>
+<li>AFPropertyListResponseSerializer：plist</li>
+<li>AFImageResponseSerializer：image</li>
+<li>AFCompoundResponseSerializer：多个组合，初始化时需要传入上面的一种或几种类型</li>
+</ol>
+</li>
+</ul>
+<p>它们都遵循AFURLResponseSerialization协议，下面贴出AFJSONResponseSerializer的实现方法<br><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AFURLResponseSerialization协议</span></span><br><span class="line">- (<span class="keyword">id</span>)responseObjectForResponse:(<span class="built_in">NSURLResponse</span> *)response data:(<span class="built_in">NSData</span> *)data error:(<span class="built_in">NSError</span> *__autoreleasing *)error</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 判断返回的数据是否合法，如果不合法，直接返回nil</span></span><br><span class="line">    <span class="keyword">if</span> (![<span class="keyword">self</span> validateResponse:(<span class="built_in">NSHTTPURLResponse</span> *)response data:data error:error]) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!error || AFErrorOrUnderlyingErrorHasCodeInDomain(*error, <span class="built_in">NSURLErrorCannotDecodeContentData</span>, AFURLResponseSerializationErrorDomain)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// json解析</span></span><br><span class="line">    <span class="built_in">BOOL</span> isSpace = [data isEqualToData:[<span class="built_in">NSData</span> dataWithBytes:<span class="string">" "</span> length:<span class="number">1</span>]];</span><br><span class="line">    <span class="keyword">if</span> (data.length == <span class="number">0</span> || isSpace) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">NSError</span> *serializationError = <span class="literal">nil</span>;</span><br><span class="line">    <span class="keyword">id</span> responseObject = [<span class="built_in">NSJSONSerialization</span> JSONObjectWithData:data options:<span class="keyword">self</span>.readingOptions error:&amp;serializationError];</span><br><span class="line">    <span class="keyword">if</span> (!responseObject)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 解析失败，返回nil</span></span><br><span class="line">        <span class="keyword">if</span> (error) &#123;</span><br><span class="line">            *error = AFErrorWithUnderlyingError(serializationError, *error);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 是否需要移除nil值的key</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.removesKeysWithNullValues) &#123;</span><br><span class="line">        <span class="keyword">return</span> AFJSONObjectByRemovingKeysWithNullValues(responseObject, <span class="keyword">self</span>.readingOptions);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> responseObject;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 验证数据合法性函数</span></span><br><span class="line">- (<span class="built_in">BOOL</span>)validateResponse:(<span class="built_in">NSHTTPURLResponse</span> *)response data:(<span class="built_in">NSData</span> *)data error:(<span class="built_in">NSError</span> * __autoreleasing *)error</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 是否合法</span></span><br><span class="line">    <span class="built_in">BOOL</span> responseIsValid = <span class="literal">YES</span>;</span><br><span class="line">    <span class="comment">// 错误信息</span></span><br><span class="line">    <span class="built_in">NSError</span> *validationError = <span class="literal">nil</span>;</span><br><span class="line">    <span class="comment">// 验证并生成错误信息</span></span><br><span class="line">    <span class="keyword">if</span> (response &amp;&amp; [response isKindOfClass:[<span class="built_in">NSHTTPURLResponse</span> <span class="keyword">class</span>]]) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.acceptableContentTypes &amp;&amp; ![<span class="keyword">self</span>.acceptableContentTypes containsObject:[response MIMEType]] &amp;&amp; !([response MIMEType] == <span class="literal">nil</span> &amp;&amp; [data length] == <span class="number">0</span>)) &#123;</span><br><span class="line">            <span class="keyword">if</span> ([data length] &gt; <span class="number">0</span> &amp;&amp; [response URL]) &#123;</span><br><span class="line">                <span class="built_in">NSString</span> *desc = [<span class="built_in">NSString</span> stringWithFormat:<span class="built_in">NSLocalizedStringFromTable</span>(<span class="string">@"Request failed: unacceptable content-type: %@"</span>, <span class="string">@"AFNetworking"</span>, <span class="literal">nil</span>), [response MIMEType]];</span><br><span class="line">                <span class="built_in">NSMutableDictionary</span> *mutableUserInfo = [@&#123;<span class="built_in">NSLocalizedDescriptionKey</span>:desc,</span><br><span class="line">                                                          <span class="built_in">NSURLErrorFailingURLErrorKey</span>:[response URL],</span><br><span class="line">                                                          AFNetworkingOperationFailingURLResponseErrorKey: response&#125; mutableCopy];</span><br><span class="line">                <span class="keyword">if</span> (data) &#123;</span><br><span class="line">                    mutableUserInfo[AFNetworkingOperationFailingURLResponseDataErrorKey] = data;</span><br><span class="line">                &#125;</span><br><span class="line">                validationError = AFErrorWithUnderlyingError([<span class="built_in">NSError</span> errorWithDomain:AFURLResponseSerializationErrorDomain code:<span class="built_in">NSURLErrorCannotDecodeContentData</span> userInfo:mutableUserInfo], validationError);</span><br><span class="line">            &#125;</span><br><span class="line">            responseIsValid = <span class="literal">NO</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">self</span>.acceptableStatusCodes &amp;&amp; ![<span class="keyword">self</span>.acceptableStatusCodes containsIndex:(<span class="built_in">NSUInteger</span>)response.statusCode] &amp;&amp; [response URL]) &#123;</span><br><span class="line">            <span class="built_in">NSString</span> *desc = [<span class="built_in">NSString</span> stringWithFormat:<span class="built_in">NSLocalizedStringFromTable</span>(<span class="string">@"Request failed: %@ (%ld)"</span>, <span class="string">@"AFNetworking"</span>, <span class="literal">nil</span>), [<span class="built_in">NSHTTPURLResponse</span> localizedStringForStatusCode:response.statusCode], (<span class="keyword">long</span>)response.statusCode];</span><br><span class="line">            <span class="built_in">NSMutableDictionary</span> *mutableUserInfo = [@&#123;<span class="built_in">NSLocalizedDescriptionKey</span>: desc,</span><br><span class="line">                                                      <span class="built_in">NSURLErrorFailingURLErrorKey</span>:[response URL],</span><br><span class="line">                                                      AFNetworkingOperationFailingURLResponseErrorKey: response&#125; mutableCopy];</span><br><span class="line">            <span class="keyword">if</span> (data) &#123;</span><br><span class="line">                mutableUserInfo[AFNetworkingOperationFailingURLResponseDataErrorKey] = data;</span><br><span class="line">            &#125;</span><br><span class="line">            validationError = AFErrorWithUnderlyingError([<span class="built_in">NSError</span> errorWithDomain:AFURLResponseSerializationErrorDomain code:<span class="built_in">NSURLErrorBadServerResponse</span> userInfo:mutableUserInfo], validationError);</span><br><span class="line">            responseIsValid = <span class="literal">NO</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (error &amp;&amp; !responseIsValid) &#123;</span><br><span class="line">        *error = validationError;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> responseIsValid;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>总结AFHTTPResponseSerializer及其子类，是处理NSURLResponse的，主要处理错误码、错误信息、解析返回的NSData等</p>
+<ul>
+<li>AFHTTPSessionManager：请求管理类，它继承自AFURLSessionManager，它主要封装了GET,POST,PUT,DELETE等等HTTPMehtod<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">AFHTTPSessionManager</span> : <span class="title">AFURLSessionManager</span> &lt;<span class="title">NSSecureCoding</span>, <span class="title">NSCopying</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 基础url</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readonly</span>, <span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">nullable</span>) <span class="built_in">NSURL</span> *baseURL;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 请求x实体</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) AFHTTPRequestSerializer &lt;AFURLRequestSerialization&gt; * requestSerializer;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 返回实体</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) AFHTTPResponseSerializer &lt;AFURLResponseSerialization&gt; * responseSerializer;</span><br><span class="line"></span><br><span class="line"><span class="comment">// SSL证书验证</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) AFSecurityPolicy *securityPolicy;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 实例</span></span><br><span class="line">+ (<span class="keyword">instancetype</span>)manager;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 通过url创建实例</span></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithBaseURL:(<span class="keyword">nullable</span> <span class="built_in">NSURL</span> *)url;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 通过url和config创建实例</span></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithBaseURL:(<span class="keyword">nullable</span> <span class="built_in">NSURL</span> *)url</span><br><span class="line">           sessionConfiguration:(<span class="keyword">nullable</span> <span class="built_in">NSURLSessionConfiguration</span> *)configuration <span class="built_in">NS_DESIGNATED_INITIALIZER</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 发起get请求</span></span><br><span class="line">- (<span class="keyword">nullable</span> <span class="built_in">NSURLSessionDataTask</span> *)GET:(<span class="built_in">NSString</span> *)URLString</span><br><span class="line">                   parameters:(<span class="keyword">nullable</span> <span class="keyword">id</span>)parameters</span><br><span class="line">                      success:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> *task, <span class="keyword">id</span> _Nullable responseObject))success</span><br><span class="line">                      failure:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> * _Nullable task, <span class="built_in">NSError</span> *error))failure DEPRECATED_ATTRIBUTE;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 发起get请求，带进度条</span></span><br><span class="line">- (<span class="keyword">nullable</span> <span class="built_in">NSURLSessionDataTask</span> *)GET:(<span class="built_in">NSString</span> *)URLString</span><br><span class="line">                            parameters:(<span class="keyword">nullable</span> <span class="keyword">id</span>)parameters</span><br><span class="line">                              progress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *downloadProgress))downloadProgress</span><br><span class="line">                               success:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> *task, <span class="keyword">id</span> _Nullable responseObject))success</span><br><span class="line">                               failure:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> * _Nullable task, <span class="built_in">NSError</span> *error))failure;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 发起head请求</span></span><br><span class="line">- (<span class="keyword">nullable</span> <span class="built_in">NSURLSessionDataTask</span> *)HEAD:(<span class="built_in">NSString</span> *)URLString</span><br><span class="line">                    parameters:(<span class="keyword">nullable</span> <span class="keyword">id</span>)parameters</span><br><span class="line">                       success:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> *task))success</span><br><span class="line">                       failure:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> * _Nullable task, <span class="built_in">NSError</span> *error))failure;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 发起post请求</span></span><br><span class="line">- (<span class="keyword">nullable</span> <span class="built_in">NSURLSessionDataTask</span> *)POST:(<span class="built_in">NSString</span> *)URLString</span><br><span class="line">                    parameters:(<span class="keyword">nullable</span> <span class="keyword">id</span>)parameters</span><br><span class="line">                       success:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> *task, <span class="keyword">id</span> _Nullable responseObject))success</span><br><span class="line">                       failure:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> * _Nullable task, <span class="built_in">NSError</span> *error))failure DEPRECATED_ATTRIBUTE;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 发起post请求，带进度条</span></span><br><span class="line">- (<span class="keyword">nullable</span> <span class="built_in">NSURLSessionDataTask</span> *)POST:(<span class="built_in">NSString</span> *)URLString</span><br><span class="line">                             parameters:(<span class="keyword">nullable</span> <span class="keyword">id</span>)parameters</span><br><span class="line">                               progress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *uploadProgress))uploadProgress</span><br><span class="line">                                success:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> *task, <span class="keyword">id</span> _Nullable responseObject))success</span><br><span class="line">                                failure:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> * _Nullable task, <span class="built_in">NSError</span> *error))failure;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 发起post请求，添加formdata，一般用于上传文件</span></span><br><span class="line">- (<span class="keyword">nullable</span> <span class="built_in">NSURLSessionDataTask</span> *)POST:(<span class="built_in">NSString</span> *)URLString</span><br><span class="line">                    parameters:(<span class="keyword">nullable</span> <span class="keyword">id</span>)parameters</span><br><span class="line">     constructingBodyWithBlock:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="keyword">id</span> &lt;AFMultipartFormData&gt; formData))block</span><br><span class="line">                       success:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> *task, <span class="keyword">id</span> _Nullable responseObject))success</span><br><span class="line">                       failure:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> * _Nullable task, <span class="built_in">NSError</span> *error))failure DEPRECATED_ATTRIBUTE;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 发起post请求，添加formdata，一般用于上传文件，带进度条</span></span><br><span class="line">- (<span class="keyword">nullable</span> <span class="built_in">NSURLSessionDataTask</span> *)POST:(<span class="built_in">NSString</span> *)URLString</span><br><span class="line">                             parameters:(<span class="keyword">nullable</span> <span class="keyword">id</span>)parameters</span><br><span class="line">              constructingBodyWithBlock:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="keyword">id</span> &lt;AFMultipartFormData&gt; formData))block</span><br><span class="line">                               progress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *uploadProgress))uploadProgress</span><br><span class="line">                                success:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> *task, <span class="keyword">id</span> _Nullable responseObject))success</span><br><span class="line">                                failure:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> * _Nullable task, <span class="built_in">NSError</span> *error))failure;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 发起put请求</span></span><br><span class="line">- (<span class="keyword">nullable</span> <span class="built_in">NSURLSessionDataTask</span> *)PUT:(<span class="built_in">NSString</span> *)URLString</span><br><span class="line">                   parameters:(<span class="keyword">nullable</span> <span class="keyword">id</span>)parameters</span><br><span class="line">                      success:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> *task, <span class="keyword">id</span> _Nullable responseObject))success</span><br><span class="line">                      failure:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> * _Nullable task, <span class="built_in">NSError</span> *error))failure;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 发起patch请求</span></span><br><span class="line">- (<span class="keyword">nullable</span> <span class="built_in">NSURLSessionDataTask</span> *)PATCH:(<span class="built_in">NSString</span> *)URLString</span><br><span class="line">                     parameters:(<span class="keyword">nullable</span> <span class="keyword">id</span>)parameters</span><br><span class="line">                        success:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> *task, <span class="keyword">id</span> _Nullable responseObject))success</span><br><span class="line">                        failure:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> * _Nullable task, <span class="built_in">NSError</span> *error))failure;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 发起delete请求</span></span><br><span class="line">- (<span class="keyword">nullable</span> <span class="built_in">NSURLSessionDataTask</span> *)DELETE:(<span class="built_in">NSString</span> *)URLString</span><br><span class="line">                      parameters:(<span class="keyword">nullable</span> <span class="keyword">id</span>)parameters</span><br><span class="line">                         success:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> *task, <span class="keyword">id</span> _Nullable responseObject))success</span><br><span class="line">                         failure:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> * _Nullable task, <span class="built_in">NSError</span> *error))failure;</span><br><span class="line"></span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>它的实现最后都会汇集到下面两个方法中，一个上传，一个下载<br><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSURLSessionDataTask</span> *)POST:(<span class="built_in">NSString</span> *)URLString</span><br><span class="line">                    parameters:(<span class="keyword">id</span>)parameters</span><br><span class="line">     constructingBodyWithBlock:(<span class="keyword">void</span> (^)(<span class="keyword">id</span> &lt;AFMultipartFormData&gt; formData))block</span><br><span class="line">                      progress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> * _Nonnull))uploadProgress</span><br><span class="line">                       success:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> *task, <span class="keyword">id</span> responseObject))success</span><br><span class="line">                       failure:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> *task, <span class="built_in">NSError</span> *error))failure</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 构建请求实体</span></span><br><span class="line">    <span class="built_in">NSError</span> *serializationError = <span class="literal">nil</span>;</span><br><span class="line">    <span class="built_in">NSMutableURLRequest</span> *request = [<span class="keyword">self</span>.requestSerializer multipartFormRequestWithMethod:<span class="string">@"POST"</span> URLString:[[<span class="built_in">NSURL</span> URLWithString:URLString relativeToURL:<span class="keyword">self</span>.baseURL] absoluteString] parameters:parameters constructingBodyWithBlock:block error:&amp;serializationError];</span><br><span class="line">    <span class="keyword">if</span> (serializationError) &#123;</span><br><span class="line">        <span class="keyword">if</span> (failure) &#123;</span><br><span class="line">            <span class="built_in">dispatch_async</span>(<span class="keyword">self</span>.completionQueue ?: dispatch_get_main_queue(), ^&#123;</span><br><span class="line">                failure(<span class="literal">nil</span>, serializationError);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 构建上传任务</span></span><br><span class="line">    __block <span class="built_in">NSURLSessionDataTask</span> *task = [<span class="keyword">self</span> uploadTaskWithStreamedRequest:request progress:uploadProgress completionHandler:^(<span class="built_in">NSURLResponse</span> * __unused response, <span class="keyword">id</span> responseObject, <span class="built_in">NSError</span> *error) &#123;</span><br><span class="line">        <span class="keyword">if</span> (error) &#123;</span><br><span class="line">            <span class="keyword">if</span> (failure) &#123;</span><br><span class="line">                failure(task, error);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (success) &#123;</span><br><span class="line">                success(task, responseObject);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 开始任务</span></span><br><span class="line">    [task resume];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> task;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSURLSessionDataTask</span> *)dataTaskWithHTTPMethod:(<span class="built_in">NSString</span> *)method</span><br><span class="line">                                       URLString:(<span class="built_in">NSString</span> *)URLString</span><br><span class="line">                                      parameters:(<span class="keyword">id</span>)parameters</span><br><span class="line">                                  uploadProgress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *uploadProgress)) uploadProgress</span><br><span class="line">                                downloadProgress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *downloadProgress)) downloadProgress</span><br><span class="line">                                         success:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> *, <span class="keyword">id</span>))success</span><br><span class="line">                                         failure:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionDataTask</span> *, <span class="built_in">NSError</span> *))failure</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 构建请求体</span></span><br><span class="line">    <span class="built_in">NSError</span> *serializationError = <span class="literal">nil</span>;</span><br><span class="line">    <span class="built_in">NSMutableURLRequest</span> *request = [<span class="keyword">self</span>.requestSerializer requestWithMethod:method URLString:[[<span class="built_in">NSURL</span> URLWithString:URLString relativeToURL:<span class="keyword">self</span>.baseURL] absoluteString] parameters:parameters error:&amp;serializationError];</span><br><span class="line">    <span class="keyword">if</span> (serializationError) &#123;</span><br><span class="line">        <span class="keyword">if</span> (failure) &#123;</span><br><span class="line">            <span class="built_in">dispatch_async</span>(<span class="keyword">self</span>.completionQueue ?: dispatch_get_main_queue(), ^&#123;</span><br><span class="line">                failure(<span class="literal">nil</span>, serializationError);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 构建下载任务</span></span><br><span class="line">    __block <span class="built_in">NSURLSessionDataTask</span> *dataTask = <span class="literal">nil</span>;</span><br><span class="line">    dataTask = [<span class="keyword">self</span> dataTaskWithRequest:request</span><br><span class="line">                          uploadProgress:uploadProgress</span><br><span class="line">                        downloadProgress:downloadProgress</span><br><span class="line">                       completionHandler:^(<span class="built_in">NSURLResponse</span> * __unused response, <span class="keyword">id</span> responseObject, <span class="built_in">NSError</span> *error) &#123;</span><br><span class="line">        <span class="keyword">if</span> (error) &#123;</span><br><span class="line">            <span class="keyword">if</span> (failure) &#123;</span><br><span class="line">                failure(dataTask, error);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (success) &#123;</span><br><span class="line">                success(dataTask, responseObject);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> dataTask;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从上面的方法中，我们可以看出都分为3步，构建请求体、构建下载/上传任务、开始任务<br>构建请求体：它由AFHTTPRequestSerializer完成<br>构建下载/上传任务：它主要由AFURLSessionManager完成<br>下面我们就来看一下AFURLSessionManager</p>
+<ul>
+<li>AFURLSessionManager：管理NSURLSession对象，下面是它的头文件注释<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">AFURLSessionManager</span> : <span class="title">NSObject</span> &lt;<span class="title">NSURLSessionDelegate</span>, <span class="title">NSURLSessionTaskDelegate</span>, <span class="title">NSURLSessionDataDelegate</span>, <span class="title">NSURLSessionDownloadDelegate</span>, <span class="title">NSSecureCoding</span>, <span class="title">NSCopying</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 会话</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readonly</span>, <span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) <span class="built_in">NSURLSession</span> *session;</span><br><span class="line"></span><br><span class="line"><span class="comment">// NSURLSession的队列</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readonly</span>, <span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) <span class="built_in">NSOperationQueue</span> *operationQueue;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 序列化响应数据的对象</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) <span class="keyword">id</span> &lt;AFURLResponseSerialization&gt; responseSerializer;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 安全策略</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) AFSecurityPolicy *securityPolicy;</span><br><span class="line"></span><br><span class="line"><span class="meta">#if !TARGET_OS_WATCH</span></span><br><span class="line"><span class="comment">// 网络监控管理者</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readwrite</span>, <span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) AFNetworkReachabilityManager *reachabilityManager;</span><br><span class="line"><span class="meta">#endif</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 当前被管理的任务的集合（包括data upload download）</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readonly</span>, <span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) <span class="built_in">NSArray</span> &lt;<span class="built_in">NSURLSessionTask</span> *&gt; *tasks;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 当前data的任务集合</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readonly</span>, <span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) <span class="built_in">NSArray</span> &lt;<span class="built_in">NSURLSessionDataTask</span> *&gt; *dataTasks;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 当前upload的任务集合</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readonly</span>, <span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) <span class="built_in">NSArray</span> &lt;<span class="built_in">NSURLSessionUploadTask</span> *&gt; *uploadTasks;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 当前download的任务集合</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readonly</span>, <span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) <span class="built_in">NSArray</span> &lt;<span class="built_in">NSURLSessionDownloadTask</span> *&gt; *downloadTasks;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 回调的队列，如果为空，就在主队列</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">nullable</span>) <span class="built_in">dispatch_queue_t</span> completionQueue;</span><br><span class="line"></span><br><span class="line"><span class="comment">// block会在这个组中调用，如果为空，就使用一个私有的</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">nullable</span>) dispatch_group_t completionGroup;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 解决在后台创建上传任务返回nil的bug，默认为NO，如果设为YES，在后台创建上传任务失败会尝试重新创建该任务</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="built_in">BOOL</span> attemptsToRecreateUploadTasksForBackgroundSessions;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化</span></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithSessionConfiguration:(<span class="keyword">nullable</span> <span class="built_in">NSURLSessionConfiguration</span> *)configuration <span class="built_in">NS_DESIGNATED_INITIALIZER</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 是否取消未完成的任务来使session失效</span></span><br><span class="line"><span class="comment">// NSURLSession有两个方法：</span></span><br><span class="line"><span class="comment">// -(void)finishTasksAndInvalidate; 标示待完成所有的任务后失效</span></span><br><span class="line"><span class="comment">// -(void)invalidateAndCancel; 标示 立即失效，未完成的任务也将结束</span></span><br><span class="line">- (<span class="keyword">void</span>)invalidateSessionCancelingTasks:(<span class="built_in">BOOL</span>)cancelPendingTasks;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 下面2个是DataTask相关的方法，对应没有进度条和有进度条</span></span><br><span class="line">- (<span class="built_in">NSURLSessionDataTask</span> *)dataTaskWithRequest:(<span class="built_in">NSURLRequest</span> *)request</span><br><span class="line">                            completionHandler:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="keyword">id</span> _Nullable responseObject,  <span class="built_in">NSError</span> * _Nullable error))completionHandler DEPRECATED_ATTRIBUTE;</span><br><span class="line">- (<span class="built_in">NSURLSessionDataTask</span> *)dataTaskWithRequest:(<span class="built_in">NSURLRequest</span> *)request</span><br><span class="line">                               uploadProgress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *uploadProgress))uploadProgressBlock</span><br><span class="line">                             downloadProgress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *downloadProgress))downloadProgressBlock</span><br><span class="line">                            completionHandler:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="keyword">id</span> _Nullable responseObject,  <span class="built_in">NSError</span> * _Nullable error))completionHandler;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// 下面3个是UploadTask相关的方法，对应fileURL/data/request 这三种不同的数据源</span></span><br><span class="line">- (<span class="built_in">NSURLSessionUploadTask</span> *)uploadTaskWithRequest:(<span class="built_in">NSURLRequest</span> *)request</span><br><span class="line">                                         fromFile:(<span class="built_in">NSURL</span> *)fileURL</span><br><span class="line">                                         progress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *uploadProgress))uploadProgressBlock</span><br><span class="line">                                completionHandler:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="keyword">id</span> _Nullable responseObject, <span class="built_in">NSError</span>  * _Nullable error))completionHandler;</span><br><span class="line">- (<span class="built_in">NSURLSessionUploadTask</span> *)uploadTaskWithRequest:(<span class="built_in">NSURLRequest</span> *)request</span><br><span class="line">                                         fromData:(<span class="keyword">nullable</span> <span class="built_in">NSData</span> *)bodyData</span><br><span class="line">                                         progress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *uploadProgress))uploadProgressBlock</span><br><span class="line">                                completionHandler:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="keyword">id</span> _Nullable responseObject, <span class="built_in">NSError</span> * _Nullable error))completionHandler;</span><br><span class="line">- (<span class="built_in">NSURLSessionUploadTask</span> *)uploadTaskWithStreamedRequest:(<span class="built_in">NSURLRequest</span> *)request</span><br><span class="line">                                                 progress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *uploadProgress))uploadProgressBlock</span><br><span class="line">                                        completionHandler:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="keyword">id</span> _Nullable responseObject, <span class="built_in">NSError</span> * _Nullable error))completionHandler;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 下面2个是DownloadTask相关的方法</span></span><br><span class="line">- (<span class="built_in">NSURLSessionDownloadTask</span> *)downloadTaskWithRequest:(<span class="built_in">NSURLRequest</span> *)request</span><br><span class="line">                                             progress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *downloadProgress))downloadProgressBlock</span><br><span class="line">                                          destination:(<span class="keyword">nullable</span> <span class="built_in">NSURL</span> * (^)(<span class="built_in">NSURL</span> *targetPath, <span class="built_in">NSURLResponse</span> *response))destination</span><br><span class="line">                                    completionHandler:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="built_in">NSURL</span> * _Nullable filePath, <span class="built_in">NSError</span> * _Nullable error))completionHandler;</span><br><span class="line">- (<span class="built_in">NSURLSessionDownloadTask</span> *)downloadTaskWithResumeData:(<span class="built_in">NSData</span> *)resumeData</span><br><span class="line">                                                progress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *downloadProgress))downloadProgressBlock</span><br><span class="line">                                             destination:(<span class="keyword">nullable</span> <span class="built_in">NSURL</span> * (^)(<span class="built_in">NSURL</span> *targetPath, <span class="built_in">NSURLResponse</span> *response))destination</span><br><span class="line">                                       completionHandler:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="built_in">NSURL</span> * _Nullable filePath, <span class="built_in">NSError</span> * _Nullable error))completionHandler;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 通过task获取其上传进度</span></span><br><span class="line">- (<span class="keyword">nullable</span> <span class="built_in">NSProgress</span> *)uploadProgressForTask:(<span class="built_in">NSURLSessionTask</span> *)task;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 通过ytask获取其下载进度</span></span><br><span class="line">- (<span class="keyword">nullable</span> <span class="built_in">NSProgress</span> *)downloadProgressForTask:(<span class="built_in">NSURLSessionTask</span> *)task;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 下面是一些代理和block回调的相关函数</span></span><br><span class="line">- (<span class="keyword">void</span>)setSessionDidBecomeInvalidBlock:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSession</span> *session, <span class="built_in">NSError</span> *error))block;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)setSessionDidReceiveAuthenticationChallengeBlock:(<span class="keyword">nullable</span> <span class="built_in">NSURLSessionAuthChallengeDisposition</span> (^)(<span class="built_in">NSURLSession</span> *session, <span class="built_in">NSURLAuthenticationChallenge</span> *challenge, <span class="built_in">NSURLCredential</span> * _Nullable __autoreleasing * _Nullable credential))block;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)setTaskNeedNewBodyStreamBlock:(<span class="keyword">nullable</span> <span class="built_in">NSInputStream</span> * (^)(<span class="built_in">NSURLSession</span> *session, <span class="built_in">NSURLSessionTask</span> *task))block;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)setTaskWillPerformHTTPRedirectionBlock:(<span class="keyword">nullable</span> <span class="built_in">NSURLRequest</span> * _Nullable (^)(<span class="built_in">NSURLSession</span> *session, <span class="built_in">NSURLSessionTask</span> *task, <span class="built_in">NSURLResponse</span> *response, <span class="built_in">NSURLRequest</span> *request))block;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)setTaskDidReceiveAuthenticationChallengeBlock:(<span class="keyword">nullable</span> <span class="built_in">NSURLSessionAuthChallengeDisposition</span> (^)(<span class="built_in">NSURLSession</span> *session, <span class="built_in">NSURLSessionTask</span> *task, <span class="built_in">NSURLAuthenticationChallenge</span> *challenge, <span class="built_in">NSURLCredential</span> * _Nullable __autoreleasing * _Nullable credential))block;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)setTaskDidSendBodyDataBlock:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSession</span> *session, <span class="built_in">NSURLSessionTask</span> *task, int64_t bytesSent, int64_t totalBytesSent, int64_t totalBytesExpectedToSend))block;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)setTaskDidCompleteBlock:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSession</span> *session, <span class="built_in">NSURLSessionTask</span> *task, <span class="built_in">NSError</span> * _Nullable error))block;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)setDataTaskDidReceiveResponseBlock:(<span class="keyword">nullable</span> <span class="built_in">NSURLSessionResponseDisposition</span> (^)(<span class="built_in">NSURLSession</span> *session, <span class="built_in">NSURLSessionDataTask</span> *dataTask, <span class="built_in">NSURLResponse</span> *response))block;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)setDataTaskDidBecomeDownloadTaskBlock:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSession</span> *session, <span class="built_in">NSURLSessionDataTask</span> *dataTask, <span class="built_in">NSURLSessionDownloadTask</span> *downloadTask))block;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)setDataTaskDidReceiveDataBlock:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSession</span> *session, <span class="built_in">NSURLSessionDataTask</span> *dataTask, <span class="built_in">NSData</span> *data))block;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)setDataTaskWillCacheResponseBlock:(<span class="keyword">nullable</span> <span class="built_in">NSCachedURLResponse</span> * (^)(<span class="built_in">NSURLSession</span> *session, <span class="built_in">NSURLSessionDataTask</span> *dataTask, <span class="built_in">NSCachedURLResponse</span> *proposedResponse))block;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)setDidFinishEventsForBackgroundURLSessionBlock:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSession</span> *session))block AF_API_UNAVAILABLE(macos);</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)setDownloadTaskDidFinishDownloadingBlock:(<span class="keyword">nullable</span> <span class="built_in">NSURL</span> * _Nullable  (^)(<span class="built_in">NSURLSession</span> *session, <span class="built_in">NSURLSessionDownloadTask</span> *downloadTask, <span class="built_in">NSURL</span> *location))block;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)setDownloadTaskDidWriteDataBlock:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSession</span> *session, <span class="built_in">NSURLSessionDownloadTask</span> *downloadTask, int64_t bytesWritten, int64_t totalBytesWritten, int64_t totalBytesExpectedToWrite))block;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)setDownloadTaskDidResumeBlock:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLSession</span> *session, <span class="built_in">NSURLSessionDownloadTask</span> *downloadTask, int64_t fileOffset, int64_t expectedTotalBytes))block;</span><br><span class="line"></span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>从上可以知道，任务的创建有3种data(数据)、upload(上传)、download(下载)，它们的实现都很相似，这里从data来分析，下面是构建NSURLSessionDataTask的实现代码<br><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSURLSessionDataTask</span> *)dataTaskWithRequest:(<span class="built_in">NSURLRequest</span> *)request</span><br><span class="line">                               uploadProgress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *uploadProgress)) uploadProgressBlock</span><br><span class="line">                             downloadProgress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *downloadProgress)) downloadProgressBlock</span><br><span class="line">                            completionHandler:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="keyword">id</span> _Nullable responseObject,  <span class="built_in">NSError</span> * _Nullable error))completionHandler &#123;</span><br><span class="line"></span><br><span class="line">    __block <span class="built_in">NSURLSessionDataTask</span> *dataTask = <span class="literal">nil</span>;</span><br><span class="line">    url_session_manager_create_task_safely(^&#123;</span><br><span class="line">        <span class="comment">// 通过NSURLSession创建NSURLSessionDataTask</span></span><br><span class="line">        <span class="comment">// - (NSURLSessionDataTask *)dataTaskWithRequest:(NSURLRequest *)request;</span></span><br><span class="line">        <span class="comment">// - (NSURLSessionDataTask *)dataTaskWithURL:(NSURL *)url;</span></span><br><span class="line">        <span class="comment">// - (NSURLSessionUploadTask *)uploadTaskWithRequest:(NSURLRequest *)request fromFile:(NSURL *)fileURL;</span></span><br><span class="line">        <span class="comment">// - (NSURLSessionUploadTask *)uploadTaskWithRequest:(NSURLRequest *)request fromData:(NSData *)bodyData;</span></span><br><span class="line">        <span class="comment">// - (NSURLSessionUploadTask *)uploadTaskWithStreamedRequest:(NSURLRequest *)request;</span></span><br><span class="line">        <span class="comment">// - (NSURLSessionDownloadTask *)downloadTaskWithRequest:(NSURLRequest *)request;</span></span><br><span class="line">        <span class="comment">// - (NSURLSessionDownloadTask *)downloadTaskWithURL:(NSURL *)url;</span></span><br><span class="line">        <span class="comment">// - (NSURLSessionDownloadTask *)downloadTaskWithResumeData:(NSData *)resumeData;</span></span><br><span class="line">        <span class="comment">// - (NSURLSessionStreamTask *)streamTaskWithHostName:(NSString *)hostname port:(NSInteger)port</span></span><br><span class="line">        <span class="comment">// - (NSURLSessionStreamTask *)streamTaskWithNetService:(NSNetService *)service</span></span><br><span class="line">        dataTask = [<span class="keyword">self</span>.session dataTaskWithRequest:request];</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 添加AFURLSessionManagerTaskDelegate代理</span></span><br><span class="line">    [<span class="keyword">self</span> addDelegateForDataTask:dataTask uploadProgress:uploadProgressBlock downloadProgress:downloadProgressBlock completionHandler:completionHandler];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> dataTask;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>上面的代码很简单，就是根据方法调用NSURLSession的相关方法创建相关的任务(data、upload、download)等，在添加AFURLSessionManagerTaskDelegate代理<br>第一步很好理解，就是创建任务，为什么要有第二步呢？为什么还有添加一个代理呢？<br>首先我们来看一下NSURLSession的代理，它有4个代理，在创建时只要设置一个相当于4个都设置了<br><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span>.session = [<span class="built_in">NSURLSession</span> sessionWithConfiguration:<span class="keyword">self</span>.sessionConfiguration </span><br><span class="line">                                             delegate:<span class="keyword">self</span> </span><br><span class="line">                                             delegateQueue:<span class="keyword">self</span>.operationQueue];</span><br></pre></td></tr></table></figure></p>
+<p>这里设置的代理后，就相对于设置了下面4个代理<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1.</span>NSURLSessionDelegate</span><br><span class="line"><span class="string">URLSession:</span><span class="string">didBecomeInvalidWithError:</span></span><br><span class="line"><span class="string">URLSession:</span><span class="string">didReceiveChallenge:</span><span class="string">completionHandler:</span></span><br><span class="line"><span class="string">URLSessionDidFinishEventsForBackgroundURLSession:</span></span><br><span class="line"></span><br><span class="line"><span class="number">2.</span> NSURLSessionTaskDelegate</span><br><span class="line"><span class="string">URLSession:</span><span class="string">willPerformHTTPRedirection:</span><span class="string">newRequest:</span><span class="string">completionHandler:</span></span><br><span class="line"><span class="string">URLSession:</span><span class="string">task:</span><span class="string">didReceiveChallenge:</span><span class="string">completionHandler:</span></span><br><span class="line"><span class="string">URLSession:</span><span class="string">task:</span><span class="string">didSendBodyData:</span><span class="string">totalBytesSent:</span><span class="string">totalBytesExpectedToSend:</span></span><br><span class="line"><span class="string">URLSession:</span><span class="string">task:</span><span class="string">needNewBodyStream:</span></span><br><span class="line"><span class="string">URLSession:</span><span class="string">task:</span><span class="string">didCompleteWithError:</span></span><br><span class="line"></span><br><span class="line"><span class="number">3.</span> NSURLSessionDataDelegate</span><br><span class="line"><span class="string">URLSession:</span><span class="string">dataTask:</span><span class="string">didReceiveResponse:</span><span class="string">completionHandler:</span></span><br><span class="line"><span class="string">URLSession:</span><span class="string">dataTask:</span><span class="string">didBecomeDownloadTask:</span></span><br><span class="line"><span class="string">URLSession:</span><span class="string">dataTask:</span><span class="string">didReceiveData:</span></span><br><span class="line"><span class="string">URLSession:</span><span class="string">dataTask:</span><span class="string">willCacheResponse:</span><span class="string">completionHandler:</span></span><br><span class="line"></span><br><span class="line"><span class="number">4.</span> NSURLSessionDownloadDelegate</span><br><span class="line"><span class="string">URLSession:</span><span class="string">downloadTask:</span><span class="string">didFinishDownloadingToURL:</span></span><br><span class="line"><span class="string">URLSession:</span><span class="string">downloadTask:</span><span class="string">didWriteData:</span><span class="string">totalBytesWritten:</span><span class="string">totalBytesWritten:</span><span class="string">totalBytesExpectedToWrite:</span></span><br><span class="line"><span class="string">URLSession:</span><span class="string">downloadTask:</span><span class="string">didResumeAtOffset:</span><span class="string">expectedTotalBytes:</span></span><br></pre></td></tr></table></figure></p>
+<p>这里需要注意的是，这4个代理不一定都会走，它会根据Task的类型走，如DataTask才会走NSURLSessionDataDelegate，这里还有一个问题，就是当有多个任务同时进行时，我们不好区分到底是哪个人物的回调，当然我们可以通过比较dataTask，AFURLSessionManagerTaskDelegate代理就是为了解决这个问题的，我们就用DataTask类型来举例<br><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)addDelegateForDataTask:(<span class="built_in">NSURLSessionDataTask</span> *)dataTask</span><br><span class="line">                uploadProgress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *uploadProgress)) uploadProgressBlock</span><br><span class="line">              downloadProgress:(<span class="keyword">nullable</span> <span class="keyword">void</span> (^)(<span class="built_in">NSProgress</span> *downloadProgress)) downloadProgressBlock</span><br><span class="line">             completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLResponse</span> *response, <span class="keyword">id</span> responseObject, <span class="built_in">NSError</span> *error))completionHandler</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 创建代理</span></span><br><span class="line">    AFURLSessionManagerTaskDelegate *delegate = [[AFURLSessionManagerTaskDelegate alloc] initWithTask:dataTask];</span><br><span class="line">    delegate.manager = <span class="keyword">self</span>;</span><br><span class="line">    <span class="comment">// 设置完成回调block</span></span><br><span class="line">    delegate.completionHandler = completionHandler;</span><br><span class="line">    <span class="comment">// 任务描述</span></span><br><span class="line">    dataTask.taskDescription = <span class="keyword">self</span>.taskDescriptionForSessionTasks;</span><br><span class="line">    <span class="comment">// 存储task和delegate</span></span><br><span class="line">    [<span class="keyword">self</span> setDelegate:delegate forTask:dataTask];</span><br><span class="line">    <span class="comment">// 任务上传进度block</span></span><br><span class="line">    delegate.uploadProgressBlock = uploadProgressBlock;</span><br><span class="line">    <span class="comment">// 任务下载进度block</span></span><br><span class="line">    delegate.downloadProgressBlock = downloadProgressBlock;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)setDelegate:(AFURLSessionManagerTaskDelegate *)delegate</span><br><span class="line">            forTask:(<span class="built_in">NSURLSessionTask</span> *)task</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSParameterAssert</span>(task);</span><br><span class="line">    <span class="built_in">NSParameterAssert</span>(delegate);</span><br><span class="line">    [<span class="keyword">self</span>.lock lock];</span><br><span class="line">    <span class="keyword">self</span>.mutableTaskDelegatesKeyedByTaskIdentifier[@(task.taskIdentifier)] = delegate;</span><br><span class="line">    [<span class="keyword">self</span> addNotificationObserverForTask:task];</span><br><span class="line">    [<span class="keyword">self</span>.lock unlock];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>上面代码就是为每个task创建了一个代理，并且将完成、上传进度、下载进度的回调block赋值个代理，再将代理和任务存储到属性mutableTaskDelegatesKeyedByTaskIdentifier中，这样就使得每一个task都有它自己的代理，当task回调时，我们通过它找到delegate，再用delegate调用相关代理方法，然后再在代理方法中回调相关的block，具体实现如下<br>在NSURLSessionDataDelegate回调时，下面是获取数据完成的代理<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)<span class="string">URLSession:</span>(NSURLSession *)session <span class="string">task:</span>(NSURLSessionTask *)task <span class="string">didCompleteWithError:</span>(NSError *)error</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 获取任务对应的delegate</span></span><br><span class="line">    AFURLSessionManagerTaskDelegate *delegate = [self <span class="string">delegateForTask:</span>task];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果有delegate，则调用相关的代理方法</span></span><br><span class="line">    <span class="keyword">if</span> (delegate) &#123;</span><br><span class="line">        [delegate <span class="string">URLSession:</span>session <span class="string">task:</span>task <span class="string">didCompleteWithError:</span>error];</span><br><span class="line">        <span class="comment">// 这里任务完成了，移除任务和代理</span></span><br><span class="line">        [self <span class="string">removeDelegateForTask:</span>task];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (self.taskDidComplete) &#123;</span><br><span class="line">        self.taskDidComplete(session, task, error);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>再来看AFURLSessionManagerTaskDelegate代理中相关实现<br><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)URLSession:(__unused <span class="built_in">NSURLSession</span> *)session task:(<span class="built_in">NSURLSessionTask</span> *)task didCompleteWithError:(<span class="built_in">NSError</span> *)error</span><br><span class="line">&#123;</span><br><span class="line">    __<span class="keyword">strong</span> AFURLSessionManager *manager = <span class="keyword">self</span>.manager;</span><br><span class="line">    __block <span class="keyword">id</span> responseObject = <span class="literal">nil</span>;</span><br><span class="line">    __block <span class="built_in">NSMutableDictionary</span> *userInfo = [<span class="built_in">NSMutableDictionary</span> dictionary];</span><br><span class="line">    userInfo[AFNetworkingTaskDidCompleteResponseSerializerKey] = manager.responseSerializer;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">NSData</span> *data = <span class="literal">nil</span>;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.mutableData) &#123;</span><br><span class="line">        data = [<span class="keyword">self</span>.mutableData <span class="keyword">copy</span>];</span><br><span class="line">        <span class="keyword">self</span>.mutableData = <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.downloadFileURL) &#123;</span><br><span class="line">        userInfo[AFNetworkingTaskDidCompleteAssetPathKey] = <span class="keyword">self</span>.downloadFileURL;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (data) &#123;</span><br><span class="line">        userInfo[AFNetworkingTaskDidCompleteResponseDataKey] = data;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (error) &#123;</span><br><span class="line">        userInfo[AFNetworkingTaskDidCompleteErrorKey] = error;</span><br><span class="line">        dispatch_group_async(manager.completionGroup ?: url_session_manager_completion_group(), manager.completionQueue ?: dispatch_get_main_queue(), ^&#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">self</span>.completionHandler) &#123;</span><br><span class="line">                <span class="keyword">self</span>.completionHandler(task.response, responseObject, error);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">                [[<span class="built_in">NSNotificationCenter</span> defaultCenter] postNotificationName:AFNetworkingTaskDidCompleteNotification object:task userInfo:userInfo];</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">dispatch_async</span>(url_session_manager_processing_queue(), ^&#123;</span><br><span class="line">            <span class="built_in">NSError</span> *serializationError = <span class="literal">nil</span>;</span><br><span class="line">            responseObject = [manager.responseSerializer responseObjectForResponse:task.response data:data error:&amp;serializationError];</span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">self</span>.downloadFileURL) &#123;</span><br><span class="line">                responseObject = <span class="keyword">self</span>.downloadFileURL;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (responseObject) &#123;</span><br><span class="line">                userInfo[AFNetworkingTaskDidCompleteSerializedResponseKey] = responseObject;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (serializationError) &#123;</span><br><span class="line">                userInfo[AFNetworkingTaskDidCompleteErrorKey] = serializationError;</span><br><span class="line">            &#125;</span><br><span class="line">            dispatch_group_async(manager.completionGroup ?: url_session_manager_completion_group(), manager.completionQueue ?: dispatch_get_main_queue(), ^&#123;</span><br><span class="line">                <span class="keyword">if</span> (<span class="keyword">self</span>.completionHandler) &#123;</span><br><span class="line">                    <span class="keyword">self</span>.completionHandler(task.response, responseObject, serializationError);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">                    [[<span class="built_in">NSNotificationCenter</span> defaultCenter] postNotificationName:AFNetworkingTaskDidCompleteNotification object:task userInfo:userInfo];</span><br><span class="line">                &#125;);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这样就实现每一个任务都有它自己单独的代理，完成后即进行回调，还有一个好处是，当任务完成时，就可以移除代理，这样可以打破block的循环引用，所以我们再AF的block中直接在self不会造成循环引用</p>
+<p>下面在看一下SSL相关类AFSecurityPolicy</p>
+<ul>
+<li><p>AFSecurityPolicy：它是为了验证证书的，至于HTTP和HTTPS的区别，这个在百度上有很多文章，我这里主要看AFSecurityPolicy都有哪些功能</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">AFSecurityPolicy</span> : <span class="title">NSObject</span> &lt;<span class="title">NSSecureCoding</span>, <span class="title">NSCopying</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 返回SSL Pinning的类型</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">readonly</span>, <span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) AFSSLPinningMode SSLPinningMode;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 这个属性保存着所有的可用做校验的证书的集合</span></span><br><span class="line"><span class="comment">// AFNetworking默认会搜索工程中所有.cer的证书文件</span></span><br><span class="line"><span class="comment">// 如果想制定某些证书，可使用certificatesInBundle在目标路径下加载证书，然后调用policyWithPinningMode:withPinnedCertificates创建一个本类对象。</span></span><br><span class="line"><span class="comment">// 只要在证书集合中任何一个校验通过，evaluateServerTrust:forDomain: 就会返回true，即通过校验</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>, <span class="keyword">nullable</span>) <span class="built_in">NSSet</span> &lt;<span class="built_in">NSData</span> *&gt; *pinnedCertificates;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 允许无效或过期的证书，默认是不允许</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="built_in">BOOL</span> allowInvalidCertificates;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 是否验证证书中的域名domain</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">assign</span>) <span class="built_in">BOOL</span> validatesDomainName;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 返回指定bundle中的证书</span></span><br><span class="line">+ (<span class="built_in">NSSet</span> &lt;<span class="built_in">NSData</span> *&gt; *)certificatesInBundle:(<span class="built_in">NSBundle</span> *)bundle;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 默认的实例对象，默认的认证设置为：</span></span><br><span class="line"><span class="comment">// 1. 不允许无效或过期的证书</span></span><br><span class="line"><span class="comment">// 2. 验证domain名称</span></span><br><span class="line"><span class="comment">// 3. 不对证书和公钥进行验证</span></span><br><span class="line">+ (<span class="keyword">instancetype</span>)defaultPolicy;</span><br><span class="line"></span><br><span class="line">+ (<span class="keyword">instancetype</span>)policyWithPinningMode:(AFSSLPinningMode)pinningMode;</span><br><span class="line"></span><br><span class="line">+ (<span class="keyword">instancetype</span>)policyWithPinningMode:(AFSSLPinningMode)pinningMode withPinnedCertificates:(<span class="built_in">NSSet</span> &lt;<span class="built_in">NSData</span> *&gt; *)pinnedCertificates;</span><br><span class="line"></span><br><span class="line">- (<span class="built_in">BOOL</span>)evaluateServerTrust:(SecTrustRef)serverTrust</span><br><span class="line">                  forDomain:(<span class="keyword">nullable</span> <span class="built_in">NSString</span> *)domain;</span><br><span class="line"></span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>还一个问题，就是线程安全问题，在AF中用了很多GCD函数来保证线程安全</p>
+</li>
+</ul>
+<p>下面函数是用来保证任务创建安全的，AF给出的解释是在iOS8.0以前，任务创建有线程安全问题，如果你适配8.0以后的话，就不会用它了<br><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="built_in">dispatch_queue_t</span> url_session_manager_creation_queue() &#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="built_in">dispatch_queue_t</span> af_url_session_manager_creation_queue;</span><br><span class="line">    <span class="keyword">static</span> <span class="built_in">dispatch_once_t</span> onceToken;</span><br><span class="line">    <span class="built_in">dispatch_once</span>(&amp;onceToken, ^&#123;</span><br><span class="line">        af_url_session_manager_creation_queue = dispatch_queue_create(<span class="string">"com.alamofire.networking.session.manager.creation"</span>, DISPATCH_QUEUE_SERIAL);</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> af_url_session_manager_creation_queue;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">void</span> url_session_manager_create_task_safely(dispatch_block_t _Nonnull block) &#123;</span><br><span class="line">    <span class="keyword">if</span> (block != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">NSFoundationVersionNumber</span> &lt; <span class="built_in">NSFoundationVersionNumber_With_Fixed_5871104061079552_bug</span>) &#123;</span><br><span class="line">            <span class="comment">// Fix of bug</span></span><br><span class="line">            <span class="comment">// Open Radar:http://openradar.appspot.com/radar?id=5871104061079552 (status: Fixed in iOS8)</span></span><br><span class="line">            <span class="comment">// Issue about:https://github.com/AFNetworking/AFNetworking/issues/2093</span></span><br><span class="line">            <span class="built_in">dispatch_sync</span>(url_session_manager_creation_queue(), block);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            block();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>下面是处理代理回调的线程函数，它是并行队列，在多个回调同时触发时，可以同时处理，可以加快数据的处理速度<br><figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">static <span class="keyword">dispatch_queue_t </span>url_session_manager_processing_queue() &#123;</span><br><span class="line">    static <span class="keyword">dispatch_queue_t </span>af_url_session_manager_processing_queue<span class="comment">;</span></span><br><span class="line">    static <span class="keyword">dispatch_once_t </span>onceToken<span class="comment">;</span></span><br><span class="line">    <span class="keyword">dispatch_once(&amp;onceToken, </span>^&#123;</span><br><span class="line">        af_url_session_manager_processing_queue = <span class="keyword">dispatch_queue_create("com.alamofire.networking.session.manager.processing", </span><span class="keyword">DISPATCH_QUEUE_CONCURRENT);</span></span><br><span class="line"><span class="keyword"> </span>   &#125;)<span class="comment">;</span></span><br><span class="line">    return af_url_session_manager_processing_queue<span class="comment">;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>下面是完成时的回调队列，当completionGroup属性为nil时，默认就使用它<br><figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">static <span class="keyword">dispatch_group_t </span>url_session_manager_completion_group() &#123;</span><br><span class="line">    static <span class="keyword">dispatch_group_t </span>af_url_session_manager_completion_group<span class="comment">;</span></span><br><span class="line">    static <span class="keyword">dispatch_once_t </span>onceToken<span class="comment">;</span></span><br><span class="line">    <span class="keyword">dispatch_once(&amp;onceToken, </span>^&#123;</span><br><span class="line">        af_url_session_manager_completion_group = <span class="keyword">dispatch_group_create();</span></span><br><span class="line"><span class="keyword"> </span>   &#125;)<span class="comment">;</span></span><br><span class="line">    return af_url_session_manager_completion_group<span class="comment">;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>下面再贴出完成时回调的代码<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (error) &#123;</span><br><span class="line">        userInfo[AFNetworkingTaskDidCompleteErrorKey] = error;</span><br><span class="line">        <span class="comment">// 请求出错</span></span><br><span class="line">        dispatch_group_async(manager.completionGroup ?: url_session_manager_completion_group(), manager.completionQueue ?: dispatch_get_main_queue(), ^&#123;</span><br><span class="line">            <span class="keyword">if</span> (self.completionHandler) &#123;</span><br><span class="line">                <span class="comment">// 在completionQueue存在时，则completionQueue中回调，否则在主队列中回调</span></span><br><span class="line">                self.completionHandler(task.response, responseObject, error);</span><br><span class="line">            &#125;</span><br><span class="line">            dispatch_async(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">                <span class="comment">// 在主线程中发出任务完成通知</span></span><br><span class="line">                [[NSNotificationCenter defaultCenter] <span class="string">postNotificationName:</span>AFNetworkingTaskDidCompleteNotification <span class="string">object:</span>task <span class="string">userInfo:</span>userInfo];</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 请求成功</span></span><br><span class="line">        dispatch_async(url_session_manager_processing_queue(), ^&#123;</span><br><span class="line">            <span class="comment">// 子线程并行处理回调数据</span></span><br><span class="line">            NSError *serializationError = nil;</span><br><span class="line">            responseObject = [manager.responseSerializer <span class="string">responseObjectForResponse:</span>task.response <span class="string">data:</span>data <span class="string">error:</span>&amp;serializationError];</span><br><span class="line">            <span class="keyword">if</span> (self.downloadFileURL) &#123;</span><br><span class="line">                responseObject = self.downloadFileURL;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (responseObject) &#123;</span><br><span class="line">                userInfo[AFNetworkingTaskDidCompleteSerializedResponseKey] = responseObject;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (serializationError) &#123;</span><br><span class="line">                userInfo[AFNetworkingTaskDidCompleteErrorKey] = serializationError;</span><br><span class="line">            &#125;</span><br><span class="line">            dispatch_group_async(manager.completionGroup ?: url_session_manager_completion_group(), manager.completionQueue ?: dispatch_get_main_queue(), ^&#123;</span><br><span class="line">                <span class="comment">// 处理完成后，在completionQueue存在时，则completionQueue中回调，否则在主队列中回调</span></span><br><span class="line">                <span class="keyword">if</span> (self.completionHandler) &#123;</span><br><span class="line">                    self.completionHandler(task.response, responseObject, serializationError);</span><br><span class="line">                &#125;</span><br><span class="line">                dispatch_async(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">                    <span class="comment">// 在主线程中发出任务完成通知</span></span><br><span class="line">                    [[NSNotificationCenter defaultCenter] <span class="string">postNotificationName:</span>AFNetworkingTaskDidCompleteNotification <span class="string">object:</span>task <span class="string">userInfo:</span>userInfo];</span><br><span class="line">                &#125;);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<p>从上面代码可以看出，在默认情况下，不论我们在哪个线程用AF做请求，它的回调永远是在主队列中</p>
+<p>到此AFNetworking文件下的类就全部读完了，实际我读AF就是想了解，在请求时，AF到底都为我们做了什么，总结一下：</p>
+<ol>
+<li>请求体NSURLRequest的封装，涉及到构建head信息、Request相关参数设置，请求参数序列化等</li>
+<li>根据请求类型创建相关的任务NSURLSessionTask，涉及到任务回调，线程安全等</li>
+<li>返回数据NSData的解析</li>
+<li>HTTPS的支持</li>
+</ol>
+<p>这里只是简单的总结这4步，但是每一步的实现都不易，如果想深入了解的话还会涉及到更多的知识点，同时也体会到写一个优秀的网络框架实属不易！</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/AFNetworking/" rel="tag"># AFNetworking</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/06/04/MJRefresh 源码阅读/" rel="next" title="MJRefresh 源码阅读">
+                <i class="fa fa-chevron-left"></i> MJRefresh 源码阅读
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/07/09/识别图片中二维码/" rel="prev" title="识别图片中二维码">
+                识别图片中二维码 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/icon.jpg"
+                alt="cyd" />
+            
+              <p class="site-author-name" itemprop="name">cyd</p>
+              <p class="site-description motion-element" itemprop="description">iOS、AVFoundation、OpenGL ES</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/cdcyd" target="_blank" title="GitHub"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:1035060416@qq.com" target="_blank" title="E-Mail"><i class="fa fa-fw fa-qq"></i>E-Mail</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.jianshu.com/u/2841ca1b2535" title="简书主页" target="_blank">简书主页</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 &mdash; <span itemprop="copyrightYear">2024</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">cyd</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+    <span title="站点总字数">229k</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    
+    <span title="站点阅读时长">3:false</span>
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动 v3.4.4</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/theme-next/hexo-theme-next">NexT.Pisces</a> v6.2.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.2.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.2.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.2.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.2.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.2.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.2.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.2.0"></script>
+
+
+
+  
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap')
+      $(e).after($wrap)
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text()
+        }).toArray().join('\n')
+        var ta = document.createElement('textarea')
+        document.body.appendChild(ta)
+        ta.style.position = 'absolute'
+        ta.style.top = '0px'
+        ta.style.left = '0px'
+        ta.value = code
+        ta.select()
+        ta.focus()
+        var result = document.execCommand('copy')
+        document.body.removeChild(ta)
+        
+          if(result)$(this).text('Copied')
+          else $(this).text('Copy failed')
+        
+        $(this).blur()
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn')
+        setTimeout(function () {
+          $b.text('复制')
+        }, 300)
+      }).append(e)
+    })
+  </script>
+
+
+</body>
+</html>
